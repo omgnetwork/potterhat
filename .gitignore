@@ -1,0 +1,19 @@
+# Build
+*.gz
+.env
+/.fetch
+/_build/
+/cover/
+/deps/
+/.idea
+
+# Docker
+docker-compose.override.yml
+
+# Erlang
+erl_crash.dump
+
+# Dev
+.DS_Store
+.elixir_ls
+Thumbs.db

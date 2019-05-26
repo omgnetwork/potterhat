@@ -1,0 +1,16 @@
+# Build
+/cover/
+/deps/
+/docs/
+/.fetch
+
+# Erlang
+erl_crash.dump
+
+# Dev
+/.git
+/.github
+.env
+.DS_Store
+Thumbs.db
+.elixir_ls
