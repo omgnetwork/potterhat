@@ -1,0 +1,51 @@
+version: 2.1
+
+
+executors:
+  metal:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      IMAGE_NAME: "gcr.io/omise-go/potterhat"
+
+  deploy:
+    docker:
+      - image: omisegoimages/ewallet-deploy:stable
+    working_directory: ~/src
+    environment:
+      IMAGE_NAME: "gcr.io/omise-go/potterhat"
+
+
+jobs:
+  build:
+    executor: metal
+    steps:
+      - checkout
+      - run: sh .circleci/ci_build.sh
+      - run: sh .circleci/ci_publish.sh
+      - run: sh .circleci/ci_slack.sh success
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  deploy:
+    executor: deploy
+    steps:
+      - checkout
+      - run: sh .circleci/ci_deploy.sh
+      - run: sh .circleci/ci_slack.sh deploy
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+
+workflows:
+  build_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires: [build]
+          filters:
+            branches:
+              only:
+                - master
