@@ -1,0 +1,3 @@
+# PotterhatPubSub
+
+Publishes Ethereum events
