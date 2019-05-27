@@ -19,7 +19,6 @@ defmodule Potterhat.Node do
   use GenServer
   require Logger
   alias Potterhat.Node.Subscription.{Log, NewHead, NewPendingTransaction, SyncStatus}
-  alias Potterhat.PubSub
 
   defmodule Response do
     @type t() :: %__MODULE__{
@@ -34,12 +33,22 @@ defmodule Potterhat.Node do
   # Client API
   #
 
+  @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
     id = Map.fetch!(opts, :id)
     GenServer.start_link(__MODULE__, opts, name: id)
   end
 
-  @spec get_label(Keyword.t() | pid()) :: map()
+  @spec stop(Keyword.t() | pid()) :: :ok
+  def stop(opts) when is_list(opts) do
+    opts
+    |> Keyword.fetch!(:node_id)
+    |> stop()
+  end
+
+  def stop(pid), do: GenServer.stop(pid, :normal, 5000)
+
+  @spec get_label(Keyword.t() | pid()) :: String.t()
   def get_label(opts) when is_list(opts) do
     opts
     |> Keyword.fetch!(:node_id)
@@ -106,7 +115,7 @@ defmodule Potterhat.Node do
         registry -> registry.deregister(self())
       end
 
-    :shutdown
+    reason
   end
 
   @impl true
@@ -236,8 +245,6 @@ defmodule Potterhat.Node do
       |> :binary.decode_unsigned()
 
     Logger.debug("#{state[:label]} (#{inspect self()}): New block #{inspect block_number}: #{block_hash}")
-
-    PubSub.broadcast(data)
 
     {:noreply, state}
   end
