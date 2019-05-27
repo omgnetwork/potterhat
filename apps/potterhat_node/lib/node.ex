@@ -40,21 +40,9 @@ defmodule Potterhat.Node do
   end
 
   @spec stop(Keyword.t() | pid()) :: :ok
-  def stop(opts) when is_list(opts) do
-    opts
-    |> Keyword.fetch!(:node_id)
-    |> stop()
-  end
-
   def stop(pid), do: GenServer.stop(pid, :normal, 5000)
 
   @spec get_label(Keyword.t() | pid()) :: String.t()
-  def get_label(opts) when is_list(opts) do
-    opts
-    |> Keyword.fetch!(:node_id)
-    |> get_label()
-  end
-
   def get_label(pid), do: GenServer.call(pid, :get_label)
 
   @spec subscribe(pid(), Keyword.t()) :: :ok

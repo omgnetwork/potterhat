@@ -65,4 +65,15 @@ defmodule Potterhat.NodeTest do
       :ok = GenServer.stop(pid)
     end
   end
+
+  describe "stop/1" do
+    test "stops the node when given a node's pid", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+
+      res = Node.stop(pid)
+
+      assert res == :ok
+      refute Process.alive?(pid)
+    end
+  end
 end
