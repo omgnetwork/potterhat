@@ -83,6 +83,13 @@ defmodule Potterhat.NodeTest do
     end
   end
 
+  describe "get_priority/1" do
+    test "returns the node's priority", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      assert Node.get_priority(pid) == meta.config.priority
+    end
+  end
+
   describe "subscribe/2" do
     test "subscribes the given pid", meta do
       {:ok, pid} = Node.start_link(meta.config)

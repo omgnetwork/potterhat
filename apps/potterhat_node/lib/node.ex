@@ -49,6 +49,11 @@ defmodule Potterhat.Node do
     GenServer.call(server, :get_label)
   end
 
+  @spec get_priority(pid()) :: integer()
+  def get_priority(server) do
+    GenServer.call(server, :get_priority)
+  end
+
   @spec subscribe(pid(), pid()) :: :ok
   def subscribe(server, subscriber) do
     GenServer.call(server, {:subscribe, subscriber})
