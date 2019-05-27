@@ -20,7 +20,7 @@ defmodule Potterhat.Node do
   require Logger
   alias Potterhat.Node.Subscription.{Log, NewHead, NewPendingTransaction, SyncStatus}
 
-  defmodule Response do
+  defmodule RPCResponse do
     @type t() :: %__MODULE__{
       status_code: non_neg_integer(),
       headers: Keyword.t(),
@@ -64,7 +64,7 @@ defmodule Potterhat.Node do
     GenServer.call(server, :get_subscribers)
   end
 
-  @spec rpc_request(pid(), map(), map()) :: {:ok, %Response{}} | {:error, any()}
+  @spec rpc_request(pid(), map(), map()) :: {:ok, %RPCResponse{}} | {:error, any()}
   def rpc_request(server, body_params, header_params) do
     GenServer.call(server, {:rpc_request, body_params, header_params})
   catch
@@ -236,7 +236,7 @@ defmodule Potterhat.Node do
     raw = HTTPoison.post!(state[:rpc], encoded_params, header_params)
 
     # This encapsulates 3rd party struct into our own.
-    response = %Response{
+    response = %RPCResponse{
       status_code: raw.status_code,
       headers: raw.headers,
       body: raw.body

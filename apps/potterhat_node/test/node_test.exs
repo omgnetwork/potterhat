@@ -15,7 +15,7 @@
 defmodule Potterhat.NodeTest do
   use ExUnit.Case
   alias Potterhat.Node
-  alias Potterhat.Node.MockEthereumNode
+  alias Potterhat.Node.{MockEthereumNode, RPCResponse}
 
   doctest Potterhat.Node
 
@@ -153,10 +153,16 @@ defmodule Potterhat.NodeTest do
   end
 
   describe "rpc_request/3" do
-    test "makes an RPC request with the given body and header params"
+    test "returns a Response struct", meta do
+      {:ok, pid} = Node.start_link(meta.config)
 
-    test "makes an RPC request with the given body and no header"
+      body = %{}
+      headers = %{}
 
-    test "makes an RPC request with the given header and no body"
+      {res, response} = Node.rpc_request(pid, body, headers)
+
+      assert res == :ok
+      assert %RPCResponse{} = response
+    end
   end
 end
