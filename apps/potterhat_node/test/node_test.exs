@@ -69,11 +69,94 @@ defmodule Potterhat.NodeTest do
   describe "stop/1" do
     test "stops the node when given a node's pid", meta do
       {:ok, pid} = Node.start_link(meta.config)
-
       res = Node.stop(pid)
 
       assert res == :ok
       refute Process.alive?(pid)
     end
+  end
+
+  describe "get_label/1" do
+    test "returns the node's label", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      assert Node.get_label(pid) == meta.config.label
+    end
+  end
+
+  describe "subscribe/2" do
+    test "subscribes the given pid", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      subscriber = spawn(fn -> :noop end)
+
+      refute subscriber in Node.get_subscribers(pid)
+      res = Node.subscribe(pid, subscriber)
+
+      assert res == :ok
+      assert subscriber in Node.get_subscribers(pid)
+    end
+
+    test "returns {:error, :already_subscribed} if the given pid is already subscribed", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      subscriber = spawn(fn -> :noop end)
+
+      # 1st subscription should pass
+      :ok = Node.subscribe(pid, subscriber)
+      assert subscriber in Node.get_subscribers(pid)
+
+      # 2nd subscription should fail
+      assert Node.subscribe(pid, subscriber) == {:error, :already_subscribed}
+    end
+  end
+
+  describe "unsubscribe/2" do
+    test "unsubscribes the given pid", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      subscriber = spawn(fn -> :noop end)
+
+      # Prepare the node subscription
+      :ok = Node.subscribe(pid, subscriber)
+      assert subscriber in Node.get_subscribers(pid)
+
+      # Actual unsubscription here
+      res = Node.unsubscribe(pid, subscriber)
+
+      assert res == :ok
+      refute subscriber in Node.get_subscribers(pid)
+    end
+
+    test "returns {:error, :not_subscribed} if the given pid is not subscribed", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      subscriber = spawn(fn -> :noop end)
+
+      refute subscriber in Node.get_subscribers(pid)
+      assert Node.unsubscribe(pid, subscriber) == {:error, :not_subscribed}
+    end
+  end
+
+  describe "get_subscribers/1" do
+    test "returns the list of subscribers", meta do
+      {:ok, pid} = Node.start_link(meta.config)
+      subscriber1 = spawn(fn -> :noop end)
+      subscriber2 = spawn(fn -> :noop end)
+      subscriber3 = spawn(fn -> :noop end)
+
+      :ok = Node.subscribe(pid, subscriber1)
+      :ok = Node.subscribe(pid, subscriber2)
+      :ok = Node.subscribe(pid, subscriber3)
+
+      subscribers = Node.get_subscribers(pid)
+
+      assert Enum.member?(subscribers, subscriber1)
+      assert Enum.member?(subscribers, subscriber2)
+      assert Enum.member?(subscribers, subscriber3)
+    end
+  end
+
+  describe "rpc_request/3" do
+    test "makes an RPC request with the given body and header params"
+
+    test "makes an RPC request with the given body and no header"
+
+    test "makes an RPC request with the given header and no body"
   end
 end

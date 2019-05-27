@@ -40,27 +40,33 @@ defmodule Potterhat.Node do
   end
 
   @spec stop(Keyword.t() | pid()) :: :ok
-  def stop(pid), do: GenServer.stop(pid, :normal, 5000)
+  def stop(server) do
+    GenServer.stop(server, :normal, 5000)
+  end
 
   @spec get_label(Keyword.t() | pid()) :: String.t()
-  def get_label(pid), do: GenServer.call(pid, :get_label)
-
-  @spec subscribe(pid(), Keyword.t()) :: :ok
-  def subscribe(subscriber, opts) do
-    node_id = Keyword.fetch!(opts, :node_id)
-    GenServer.call(node_id, {:subscribe, subscriber})
+  def get_label(server) do
+    GenServer.call(server, :get_label)
   end
 
-  @spec unsubscribe(pid(), Keyword.t()) :: :ok
-  def unsubscribe(unsubscriber, opts) do
-    node_id = Keyword.fetch!(opts, :node_id)
-    GenServer.call(node_id, {:subscribe, unsubscriber})
+  @spec subscribe(pid(), pid()) :: :ok
+  def subscribe(server, subscriber) do
+    GenServer.call(server, {:subscribe, subscriber})
   end
 
-  @spec rpc_request(map(), map(), Keyword.t()) :: :ok
-  def rpc_request(body_params, header_params, opts) do
-    node_id = Keyword.fetch!(opts, :node_id)
-    GenServer.call(node_id, {:rpc_request, body_params, header_params})
+  @spec unsubscribe(pid(), pid()) :: :ok
+  def unsubscribe(server, unsubscriber) do
+    GenServer.call(server, {:unsubscribe, unsubscriber})
+  end
+
+  @spec get_subscribers(pid()) :: [pid()]
+  def get_subscribers(server) do
+    GenServer.call(server, :get_subscribers)
+  end
+
+  @spec rpc_request(pid(), map(), map()) :: {:ok, %Response{}} | {:error, any()}
+  def rpc_request(server, body_params, header_params) do
+    GenServer.call(server, {:rpc_request, body_params, header_params})
   catch
     :exit, value -> {:error, value}
   end
@@ -179,16 +185,41 @@ defmodule Potterhat.Node do
 
   @impl true
   def handle_call({:subscribe, subscriber}, _from, state) do
-    subscribers = [subscriber | state.subscribers]
+    {response, new_state} =
+      state.subscribers
+      |> Enum.member?(subscriber)
+      |> case do
+        false ->
+          subscribed = [subscriber | state.subscribers]
+          {:ok, %{state | subscribers: subscribed}}
 
-    {:reply, :ok, %{state | subscribers: subscribers}}
+        true ->
+          {{:error, :already_subscribed}, state}
+      end
+
+    {:reply, response, new_state}
   end
 
   @impl true
   def handle_call({:unsubscribe, unsubscriber}, _from, state) do
-    subscribers = List.delete(state.subscribers, unsubscriber)
+    {response, new_state} =
+      state.subscribers
+      |> Enum.member?(unsubscriber)
+      |> case do
+        true ->
+          unsubscribed = List.delete(state.subscribers, unsubscriber)
+          {:ok, %{state | subscribers: unsubscribed}}
 
-    {:reply, :ok, %{state | subscribers: subscribers}}
+        false ->
+          {{:error, :not_subscribed}, state}
+      end
+
+    {:reply, response, new_state}
+  end
+
+  @impl true
+  def handle_call(:get_subscribers, _from, state) do
+    {:reply, state.subscribers, state}
   end
 
   @impl true
