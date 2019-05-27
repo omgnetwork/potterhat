@@ -60,7 +60,7 @@ defmodule Potterhat.Node.Subscription.SyncStatus do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:sync_status, decoded})
+    _ = GenServer.cast(state[:listener], {:event_received, :sync_status, decoded})
     {:ok, state}
   end
 end

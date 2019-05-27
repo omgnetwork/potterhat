@@ -60,7 +60,7 @@ defmodule Potterhat.Node.Subscription.NewHead do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:new_heads, decoded})
+    _ = GenServer.cast(state[:listener], {:event_received, :new_heads, decoded})
     {:ok, state}
   end
 end

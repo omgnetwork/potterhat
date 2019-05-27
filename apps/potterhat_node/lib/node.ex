@@ -250,91 +250,11 @@ defmodule Potterhat.Node do
     {:reply, {:ok, response}, state}
   end
 
-  ## New block listening
+  def handle_cast({:event_received, event, message}, state) do
+    Enum.each(state.subscribers, fn subscriber ->
+      subscriber.handle_event(self(), {event, message})
+    end)
 
-  @impl true
-  def handle_cast({:new_heads, %{"result" => result}}, state) when is_binary(result) do
-    Logger.info("#{state[:label]} (#{inspect self()}): Listening for new heads started...")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:new_heads, data}, state) do
-    block_hash = data["params"]["result"]["hash"]
-
-    block_number =
-      data["params"]["result"]["number"]
-      |> String.slice(2..-1)
-      |> Base.decode16!(case: :mixed)
-      |> :binary.decode_unsigned()
-
-    Logger.debug("#{state[:label]} (#{inspect self()}): New block #{inspect block_number}: #{block_hash}")
-
-    {:noreply, state}
-  end
-
-  ## Logs listening
-
-  @impl true
-  def handle_cast({:logs, %{"result" => result}}, state) when is_binary(result) do
-    Logger.info("#{state[:label]} (#{inspect self()}): Listening for logs started...")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:logs, %{"error" => _} = data}, state) do
-    Logger.warn("#{state[:label]} (#{inspect self()}): Failed to listen to logs...")
-    Logger.warn("#{state[:label]} (#{inspect self()}): Error: #{inspect(data)}")
-
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:logs, %{"params" => _} = log}, state) do
-    Logger.debug("#{state[:label]} (#{inspect self()}): New log: #{inspect(log)}")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:logs, data}, state) do
-    Logger.warn("#{state[:label]} (#{inspect self()}): Unknown logs data: #{inspect(data)}")
-    {:noreply, state}
-  end
-
-  ## New pending transactions listening
-
-  @impl true
-  def handle_cast({:new_pending_tranasctions, %{"result" => result}}, state) when is_binary(result) do
-    Logger.info("#{state[:label]} (#{inspect self()}): Listening for new pending transactions started...")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:new_pending_tranasctions, _data}, state) do
-    {:noreply, state}
-  end
-
-  ## Sync status listening
-
-  @impl true
-  def handle_cast({:sync_status, %{"result" => result}}, state) when is_binary(result) do
-    Logger.info("#{state[:label]} (#{inspect self()}): Listening for sync status started...")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:sync_status, %{"params" => %{"result" => false}}}, state) do
-    Logger.debug("#{state[:label]} (#{inspect self()}): Sync stopped.")
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:sync_status, %{"params" => %{"result" => result}}}, state) do
-    Logger.debug("#{state[:label]} (#{inspect self()}): Sync started."
-      <> " Starting block: #{result["status"]["StartingBlock"]},"
-      <> " Current block: #{result["status"]["CurrentBlock"]},"
-      <> " Highest block: #{result["status"]["HighestBlock"]},"
-    )
     {:noreply, state}
   end
 end

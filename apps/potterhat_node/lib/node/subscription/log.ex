@@ -61,7 +61,7 @@ defmodule Potterhat.Node.Subscription.Log do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:logs, decoded})
+    _ = GenServer.cast(state[:listener], {:event_received, :logs, decoded})
     {:ok, state}
   end
 end
