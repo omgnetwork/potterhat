@@ -94,7 +94,7 @@ defmodule Potterhat.Node do
       node_registry: Map.get(opts, :node_registry),
       listening_events: [],
       # TODO: Convert subscribers into a Registry
-      subscribers: []
+      subscribers: Application.get_env(:potterhat_node, :default_subscribers) || []
     }
 
     {:ok, state, {:continue, :print_version}}
@@ -255,7 +255,7 @@ defmodule Potterhat.Node do
   def handle_cast({:event_received, event, message}, state) do
     # TODO: Turn this into a Registery.dispatch/4
     Enum.each(state.subscribers, fn subscriber ->
-      subscriber.handle_event(self(), {event, message})
+      subscriber.handle_event(state, {event, message})
     end)
 
     {:noreply, state}

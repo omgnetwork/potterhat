@@ -22,12 +22,12 @@ defmodule Potterhat.Node.EventLogger do
 
   @impl true
   def handle_event(emitter, {:new_heads, %{"result" => result}}) when is_binary(result) do
-    Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for new heads started...")
+    Logger.info("#{emitter.label} (#{inspect self()}): Listening for new heads started...")
   end
 
   @impl true
   def handle_event(emitter, {:new_heads, %{"error" => _} = data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to new heads: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new heads: #{inspect(data)}")
   end
 
   @impl true
@@ -40,73 +40,73 @@ defmodule Potterhat.Node.EventLogger do
       |> Base.decode16!(case: :mixed)
       |> :binary.decode_unsigned()
 
-    Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): New block #{inspect block_number}: #{block_hash}")
+    Logger.debug("#{emitter.label} (#{inspect self()}): New block #{inspect block_number}: #{block_hash}")
   end
 
   ## Logs listening
 
   @impl true
   def handle_event(emitter, {:logs, %{"result" => result}}) when is_binary(result) do
-    Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for logs started...")
+    Logger.info("#{emitter.label} (#{inspect self()}): Listening for logs started...")
   end
 
   @impl true
   def handle_event(emitter, {:logs, %{"error" => _} = data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to logs: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to logs: #{inspect(data)}")
   end
 
   @impl true
   def handle_event(emitter, {:logs, %{"params" => _} = log}) do
-    Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): New log: #{inspect(log)}")
+    Logger.debug("#{emitter.label} (#{inspect self()}): New log: #{inspect(log)}")
   end
 
   @impl true
   def handle_event(emitter, {:logs, data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Unknown logs data: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Unknown logs data: #{inspect(data)}")
   end
 
   ## New pending transactions listening
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"result" => result}}) when is_binary(result) do
-    Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for new pending transactions started...")
+    Logger.info("#{emitter.label} (#{inspect self()}): Listening for new pending transactions started...")
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"error" => _} = data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to new_pending_tranasctions: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new_pending_tranasctions: #{inspect(data)}")
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"params" => _} = txn}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): New new_pending_tranasctions data: #{inspect(txn)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): New new_pending_tranasctions data: #{inspect(txn)}")
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Unknown new_pending_tranasctions data: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Unknown new_pending_tranasctions data: #{inspect(data)}")
   end
 
   ## Sync status listening
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"result" => result}}) when is_binary(result) do
-    Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for sync status started...")
+    Logger.info("#{emitter.label} (#{inspect self()}): Listening for sync status started...")
   end
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"error" => _} = data}) do
-    Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to sync status: #{inspect(data)}")
+    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to sync status: #{inspect(data)}")
   end
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"params" => %{"result" => false}}}) do
-    Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): Sync stopped.")
+    Logger.debug("#{emitter.label} (#{inspect self()}): Sync stopped.")
   end
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"params" => %{"result" => result}}}) do
-    Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): Sync started."
+    Logger.debug("#{emitter.label} (#{inspect self()}): Sync started."
       <> " Starting block: #{result["status"]["StartingBlock"]},"
       <> " Current block: #{result["status"]["CurrentBlock"]},"
       <> " Highest block: #{result["status"]["HighestBlock"]},"
