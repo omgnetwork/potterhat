@@ -251,6 +251,7 @@ defmodule Potterhat.Node do
     {:reply, {:ok, response}, state}
   end
 
+  @impl true
   def handle_cast({:event_received, event, message}, state) do
     # TODO: Turn this into a Registery.dispatch/4
     Enum.each(state.subscribers, fn subscriber ->

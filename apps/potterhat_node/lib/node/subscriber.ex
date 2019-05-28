@@ -16,5 +16,5 @@ defmodule Potterhat.Node.Subscriber do
   @doc """
   Handles an incoming event.
   """
-  @callback handle_event(emitter :: pid(), {event :: atom(), message :: any()}) :: :ok
+  @callback handle_event(emitter :: pid(), {event :: atom(), message :: any()}) :: any()
 end

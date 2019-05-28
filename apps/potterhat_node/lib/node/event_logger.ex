@@ -23,13 +23,11 @@ defmodule Potterhat.Node.EventLogger do
   @impl true
   def handle_event(emitter, {:new_heads, %{"result" => result}}) when is_binary(result) do
     Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for new heads started...")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:new_heads, %{"error" => _} = data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to new heads: #{inspect(data)}")
-    :ok
   end
 
   @impl true
@@ -43,8 +41,6 @@ defmodule Potterhat.Node.EventLogger do
       |> :binary.decode_unsigned()
 
     Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): New block #{inspect block_number}: #{block_hash}")
-
-    :ok
   end
 
   ## Logs listening
@@ -52,25 +48,21 @@ defmodule Potterhat.Node.EventLogger do
   @impl true
   def handle_event(emitter, {:logs, %{"result" => result}}) when is_binary(result) do
     Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for logs started...")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:logs, %{"error" => _} = data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to logs: #{inspect(data)}")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:logs, %{"params" => _} = log}) do
     Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): New log: #{inspect(log)}")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:logs, data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Unknown logs data: #{inspect(data)}")
-    :ok
   end
 
   ## New pending transactions listening
@@ -78,25 +70,21 @@ defmodule Potterhat.Node.EventLogger do
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"result" => result}}) when is_binary(result) do
     Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for new pending transactions started...")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"error" => _} = data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to new_pending_tranasctions: #{inspect(data)}")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, %{"params" => _} = txn}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): New new_pending_tranasctions data: #{inspect(txn)}")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:new_pending_tranasctions, data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Unknown new_pending_tranasctions data: #{inspect(data)}")
-    :ok
   end
 
   ## Sync status listening
@@ -104,19 +92,16 @@ defmodule Potterhat.Node.EventLogger do
   @impl true
   def handle_event(emitter, {:sync_status, %{"result" => result}}) when is_binary(result) do
     Logger.info("#{Node.get_label(emitter)} (#{inspect emitter}): Listening for sync status started...")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"error" => _} = data}) do
     Logger.warn("#{Node.get_label(emitter)} (#{inspect emitter}): Failed to listen to sync status: #{inspect(data)}")
-    :ok
   end
 
   @impl true
   def handle_event(emitter, {:sync_status, %{"params" => %{"result" => false}}}) do
     Logger.debug("#{Node.get_label(emitter)} (#{inspect emitter}): Sync stopped.")
-    :ok
   end
 
   @impl true
@@ -126,6 +111,5 @@ defmodule Potterhat.Node.EventLogger do
       <> " Current block: #{result["status"]["CurrentBlock"]},"
       <> " Highest block: #{result["status"]["HighestBlock"]},"
     )
-    :ok
   end
 end
