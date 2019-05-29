@@ -18,6 +18,7 @@ defmodule Potterhat.Node do
   """
   use GenServer
   require Logger
+  alias Potterhat.Node.EventLogger
   alias Potterhat.Node.Subscription.{Log, NewHead, NewPendingTransaction, SyncStatus}
 
   defmodule RPCResponse do
@@ -94,7 +95,7 @@ defmodule Potterhat.Node do
       node_registry: Map.get(opts, :node_registry),
       listening_events: [],
       # TODO: Convert subscribers into a Registry
-      subscribers: Application.get_env(:potterhat_node, :default_subscribers) || []
+      subscribers: []
     }
 
     {:ok, state, {:continue, :print_version}}
@@ -253,10 +254,7 @@ defmodule Potterhat.Node do
 
   @impl true
   def handle_cast({:event_received, event, message}, state) do
-    # TODO: Turn this into a Registery.dispatch/4
-    Enum.each(state.subscribers, fn subscriber ->
-      subscriber.handle_event(state, {event, message})
-    end)
+    EventLogger.handle_receive({event, message}, state)
 
     {:noreply, state}
   end

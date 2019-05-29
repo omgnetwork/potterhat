@@ -14,24 +14,18 @@
 
 defmodule Potterhat.Node.EventLogger do
   require Logger
-  alias Potterhat.Node
-
-  @behaviour Potterhat.Node.Subscriber
 
   ## New block listening
 
-  @impl true
-  def handle_event(emitter, {:new_heads, %{"result" => result}}) when is_binary(result) do
+  def handle_receive({:new_heads, %{"result" => result}}, emitter) when is_binary(result) do
     Logger.info("#{emitter.label} (#{inspect self()}): Listening for new heads started...")
   end
 
-  @impl true
-  def handle_event(emitter, {:new_heads, %{"error" => _} = data}) do
+  def handle_receive({:new_heads, %{"error" => _} = data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new heads: #{inspect(data)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:new_heads, data}) do
+  def handle_receive({:new_heads, data}, emitter) do
     block_hash = data["params"]["result"]["hash"]
 
     block_number =
@@ -45,67 +39,55 @@ defmodule Potterhat.Node.EventLogger do
 
   ## Logs listening
 
-  @impl true
-  def handle_event(emitter, {:logs, %{"result" => result}}) when is_binary(result) do
+  def handle_receive({:logs, %{"result" => result}}, emitter) when is_binary(result) do
     Logger.info("#{emitter.label} (#{inspect self()}): Listening for logs started...")
   end
 
-  @impl true
-  def handle_event(emitter, {:logs, %{"error" => _} = data}) do
+  def handle_receive({:logs, %{"error" => _} = data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to logs: #{inspect(data)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:logs, %{"params" => _} = log}) do
+  def handle_receive({:logs, %{"params" => _} = log}, emitter) do
     Logger.debug("#{emitter.label} (#{inspect self()}): New log: #{inspect(log)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:logs, data}) do
+  def handle_receive({:logs, data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Unknown logs data: #{inspect(data)}")
   end
 
   ## New pending transactions listening
 
-  @impl true
-  def handle_event(emitter, {:new_pending_tranasctions, %{"result" => result}}) when is_binary(result) do
+  def handle_receive({:new_pending_tranasctions, %{"result" => result}}, emitter) when is_binary(result) do
     Logger.info("#{emitter.label} (#{inspect self()}): Listening for new pending transactions started...")
   end
 
-  @impl true
-  def handle_event(emitter, {:new_pending_tranasctions, %{"error" => _} = data}) do
+  def handle_receive({:new_pending_tranasctions, %{"error" => _} = data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new_pending_tranasctions: #{inspect(data)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:new_pending_tranasctions, %{"params" => _} = txn}) do
+  def handle_receive({:new_pending_tranasctions, %{"params" => _} = txn}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): New new_pending_tranasctions data: #{inspect(txn)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:new_pending_tranasctions, data}) do
+  def handle_receive({:new_pending_tranasctions, data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Unknown new_pending_tranasctions data: #{inspect(data)}")
   end
 
   ## Sync status listening
 
-  @impl true
-  def handle_event(emitter, {:sync_status, %{"result" => result}}) when is_binary(result) do
+  def handle_receive({:sync_status, %{"result" => result}}, emitter) when is_binary(result) do
     Logger.info("#{emitter.label} (#{inspect self()}): Listening for sync status started...")
   end
 
-  @impl true
-  def handle_event(emitter, {:sync_status, %{"error" => _} = data}) do
+  def handle_receive({:sync_status, %{"error" => _} = data}, emitter) do
     Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to sync status: #{inspect(data)}")
   end
 
-  @impl true
-  def handle_event(emitter, {:sync_status, %{"params" => %{"result" => false}}}) do
+  def handle_receive({:sync_status, %{"params" => %{"result" => false}}}, emitter) do
     Logger.debug("#{emitter.label} (#{inspect self()}): Sync stopped.")
   end
 
-  @impl true
-  def handle_event(emitter, {:sync_status, %{"params" => %{"result" => result}}}) do
+  def handle_receive({:sync_status, %{"params" => %{"result" => result}}}, emitter) do
     Logger.debug("#{emitter.label} (#{inspect self()}): Sync started."
       <> " Starting block: #{result["status"]["StartingBlock"]},"
       <> " Current block: #{result["status"]["CurrentBlock"]},"
