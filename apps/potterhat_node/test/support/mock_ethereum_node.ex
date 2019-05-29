@@ -35,6 +35,10 @@ defmodule Potterhat.Node.MockEthereumNode do
     end
   end
 
+  def ws_emit(pid, data) do
+    send(pid, {:send, data})
+  end
+
   def shutdown(ref) do
     Plug.Cowboy.shutdown(ref)
   end
@@ -43,7 +47,7 @@ defmodule Potterhat.Node.MockEthereumNode do
     receive do
       pid when is_pid(pid) -> pid
     after
-      500 -> raise "No Server Socket pid"
+      10000 -> raise "No Server Socket pid"
     end
   end
 

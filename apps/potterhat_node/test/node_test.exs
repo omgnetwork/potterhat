@@ -14,8 +14,9 @@
 
 defmodule Potterhat.NodeTest do
   use ExUnit.Case
+  import Potterhat.Node.EthereumTestHelper
   alias Potterhat.Node
-  alias Potterhat.Node.{MockEthereumNode, RPCResponse}
+  alias Potterhat.Node.RPCResponse
 
   doctest Potterhat.Node
 
@@ -29,9 +30,7 @@ defmodule Potterhat.NodeTest do
   }
 
   setup do
-    # Starts an Ethereum client
-    {:ok, {server_ref, rpc_url, websocket_url}} = MockEthereumNode.start(self())
-    on_exit(fn -> MockEthereumNode.shutdown(server_ref) end)
+    {:ok, rpc_url, websocket_url} = start_mock_node()
 
     config =
       @node_config

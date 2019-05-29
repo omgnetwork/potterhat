@@ -20,6 +20,7 @@ defmodule Potterhat.Node.MockEthereumNode.WebSocket do
   def init(req, [{test_pid, agent_pid}] = state) do
     case Agent.get(agent_pid, fn x -> x end) do
       :ok ->
+        send(test_pid, self())
         {:cowboy_websocket, req, state}
 
       int when is_integer(int) ->
@@ -88,6 +89,14 @@ defmodule Potterhat.Node.MockEthereumNode.WebSocket do
       "jsonrpc" => "2.0",
       "id" => 1,
       "result" => "0xcd0c3e8af590364c09d0fa6a1210faf5"
+    })
+  end
+
+  defp handle_message(%{"method" => "eth_subscribe", "params" => ["logs", _]}) do
+    Jason.encode!(%{
+      "jsonrpc" => "2.0",
+      "id" => 1,
+      "result" => "0x4a8a4c0517381924f9838102c5a4dcb7"
     })
   end
 
