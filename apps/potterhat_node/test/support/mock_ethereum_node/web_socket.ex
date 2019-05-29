@@ -87,7 +87,7 @@ defmodule Potterhat.Node.MockEthereumNode.WebSocket do
   defp handle_message(%{"method" => "eth_subscribe", "params" => ["newHeads"]}) do
     Jason.encode!(%{
       "jsonrpc" => "2.0",
-      "id" => 1,
+      "id" => 2,
       "result" => "0xcd0c3e8af590364c09d0fa6a1210faf5"
     })
   end
@@ -95,8 +95,24 @@ defmodule Potterhat.Node.MockEthereumNode.WebSocket do
   defp handle_message(%{"method" => "eth_subscribe", "params" => ["logs", _]}) do
     Jason.encode!(%{
       "jsonrpc" => "2.0",
-      "id" => 1,
+      "id" => 2,
       "result" => "0x4a8a4c0517381924f9838102c5a4dcb7"
+    })
+  end
+
+  defp handle_message(%{"method" => "eth_subscribe", "params" => ["newPendingTransactions"]}) do
+    Jason.encode!(%{
+      "jsonrpc" => "2.0",
+      "id" => 2,
+      "result" => "0xc3b33aa549fb9a60e95d21862596617c"
+    })
+  end
+
+  defp handle_message(%{"method" => "eth_subscribe", "params" => ["syncing"]}) do
+    Jason.encode!(%{
+      "jsonrpc" => "2.0",
+      "id" => 1,
+      "result" => "0xe2ffeb2703bcf602d42922385829ce96"
     })
   end
 

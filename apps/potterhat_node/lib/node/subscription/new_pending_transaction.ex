@@ -60,7 +60,7 @@ defmodule Potterhat.Node.Subscription.NewPendingTransaction do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:event_received, :new_pending_tranasctions, decoded})
+    _ = GenServer.cast(state[:listener], {:event_received, :new_pending_transactions, decoded})
     {:ok, state}
   end
 end
