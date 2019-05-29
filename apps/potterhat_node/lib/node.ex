@@ -254,7 +254,7 @@ defmodule Potterhat.Node do
 
   @impl true
   def handle_cast({:event_received, event, message}, state) do
-    EventLogger.handle_receive({event, message}, state)
+    EventLogger.log_event({event, message}, label: state.label, pid: self())
 
     {:noreply, state}
   end

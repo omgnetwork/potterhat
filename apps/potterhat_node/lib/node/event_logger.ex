@@ -17,15 +17,15 @@ defmodule Potterhat.Node.EventLogger do
 
   ## New block listening
 
-  def handle_receive({:new_heads, %{"result" => result}}, emitter) when is_binary(result) do
-    Logger.info("#{emitter.label} (#{inspect self()}): Listening for new heads started...")
+  def log_event({:new_heads, %{"result" => result}}, opts) when is_binary(result) do
+    info("Listening for new heads started...", opts)
   end
 
-  def handle_receive({:new_heads, %{"error" => _} = data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new heads: #{inspect(data)}")
+  def log_event({:new_heads, %{"error" => _} = data}, opts) do
+    error("Failed to listen to new heads: #{inspect(data)}", opts)
   end
 
-  def handle_receive({:new_heads, data}, emitter) do
+  def log_event({:new_heads, data}, opts) do
     block_hash = data["params"]["result"]["hash"]
 
     block_number =
@@ -34,64 +34,75 @@ defmodule Potterhat.Node.EventLogger do
       |> Base.decode16!(case: :mixed)
       |> :binary.decode_unsigned()
 
-    Logger.debug("#{emitter.label} (#{inspect self()}): New block #{inspect block_number}: #{block_hash}")
+    debug("New block #{inspect block_number}: #{block_hash}", opts)
   end
 
   ## Logs listening
 
-  def handle_receive({:logs, %{"result" => result}}, emitter) when is_binary(result) do
-    Logger.info("#{emitter.label} (#{inspect self()}): Listening for logs started...")
+  def log_event({:logs, %{"result" => result}}, opts) when is_binary(result) do
+    info("Listening for logs started...", opts)
   end
 
-  def handle_receive({:logs, %{"error" => _} = data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to logs: #{inspect(data)}")
+  def log_event({:logs, %{"error" => _} = data}, opts) do
+    error("Failed to listen to logs: #{inspect(data)}", opts)
   end
 
-  def handle_receive({:logs, %{"params" => _} = log}, emitter) do
-    Logger.debug("#{emitter.label} (#{inspect self()}): New log: #{inspect(log)}")
+  def log_event({:logs, %{"params" => _} = log}, opts) do
+    debug("New log: #{inspect(log)}", opts)
   end
 
-  def handle_receive({:logs, data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Unknown logs data: #{inspect(data)}")
+  def log_event({:logs, data}, opts) do
+    warn("Unknown logs data: #{inspect(data)}", opts)
   end
 
   ## New pending transactions listening
 
-  def handle_receive({:new_pending_tranasctions, %{"result" => result}}, emitter) when is_binary(result) do
-    Logger.info("#{emitter.label} (#{inspect self()}): Listening for new pending transactions started...")
+  def log_event({:new_pending_transactions, %{"result" => result}}, opts) when is_binary(result) do
+    info("Listening for new_pending_transactions started...", opts)
   end
 
-  def handle_receive({:new_pending_tranasctions, %{"error" => _} = data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to new_pending_tranasctions: #{inspect(data)}")
+  def log_event({:new_pending_transactions, %{"error" => _} = data}, opts) do
+    error("Failed to listen to new_pending_transactions: #{inspect(data)}", opts)
   end
 
-  def handle_receive({:new_pending_tranasctions, %{"params" => _} = txn}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): New new_pending_tranasctions data: #{inspect(txn)}")
+  def log_event({:new_pending_transactions, %{"params" => _} = txn}, opts) do
+    debug("New new_pending_transactions data: #{inspect(txn)}", opts)
   end
 
-  def handle_receive({:new_pending_tranasctions, data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Unknown new_pending_tranasctions data: #{inspect(data)}")
+  def log_event({:new_pending_transactions, data}, opts) do
+    warn("Unknown new_pending_transactions data: #{inspect(data)}", opts)
   end
 
   ## Sync status listening
 
-  def handle_receive({:sync_status, %{"result" => result}}, emitter) when is_binary(result) do
-    Logger.info("#{emitter.label} (#{inspect self()}): Listening for sync status started...")
+  def log_event({:sync_status, %{"result" => result}}, opts) when is_binary(result) do
+    info("Listening for sync status started...", opts)
   end
 
-  def handle_receive({:sync_status, %{"error" => _} = data}, emitter) do
-    Logger.warn("#{emitter.label} (#{inspect self()}): Failed to listen to sync status: #{inspect(data)}")
+  def log_event({:sync_status, %{"error" => _} = data}, opts) do
+    error("Failed to listen to sync status: #{inspect(data)}", opts)
   end
 
-  def handle_receive({:sync_status, %{"params" => %{"result" => false}}}, emitter) do
-    Logger.debug("#{emitter.label} (#{inspect self()}): Sync stopped.")
+  def log_event({:sync_status, %{"params" => %{"result" => false}}}, opts) do
+    debug("Sync stopped.", opts)
   end
 
-  def handle_receive({:sync_status, %{"params" => %{"result" => result}}}, emitter) do
-    Logger.debug("#{emitter.label} (#{inspect self()}): Sync started."
-      <> " Starting block: #{result["status"]["StartingBlock"]},"
-      <> " Current block: #{result["status"]["CurrentBlock"]},"
-      <> " Highest block: #{result["status"]["HighestBlock"]},"
-    )
+  def log_event({:sync_status, %{"params" => %{"result" => result}}}, opts) do
+    message =
+      """
+      Sync started.
+        - Starting block: #{result["status"]["StartingBlock"]}"
+        - Current block: #{result["status"]["CurrentBlock"]}"
+        - Highest block: #{result["status"]["HighestBlock"]}"
+      """
+
+    debug(message, opts)
   end
+
+  defp debug(message, opts), do: message |> prefix_with(opts) |> Logger.debug()
+  defp info(message, opts), do: message |> prefix_with(opts) |> Logger.info()
+  defp warn(message, opts), do: message |> prefix_with(opts) |> Logger.warn()
+  defp error(message, opts), do: message |> prefix_with(opts) |> Logger.error()
+
+  defp prefix_with(message, opts), do: "#{opts[:label]} (#{inspect(opts[:pid])}): #{message}"
 end

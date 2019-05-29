@@ -15,19 +15,6 @@
 defmodule Potterhat.Node.EthereumTestHelper do
   alias Potterhat.Node.MockEthereumNode
 
-  defmodule MockSubscriber do
-    use GenServer
-    @behaviour Potterhat.Node.Subscriber
-
-    def init(_opts) do
-      {:ok, nil}
-    end
-
-    def handle_event(emitter, message) do
-      :noop
-    end
-  end
-
   # Using macro here to inject on_exit/1 into the setup
   defmacro start_mock_node do
     quote do
@@ -35,16 +22,6 @@ defmodule Potterhat.Node.EthereumTestHelper do
       on_exit(fn -> MockEthereumNode.shutdown(server_ref) end)
 
       {:ok, rpc_url, websocket_url}
-    end
-  end
-
-  # Using macro here to inject on_exit/1 into the setup
-  defmacro start_mock_subscriber do
-    quote do
-      {:ok, pid} = MockSubscriber.start_link()
-      on_exit(fn -> MockSubscriber.shutdown(pid) end)
-
-      {:ok, pid}
     end
   end
 end
