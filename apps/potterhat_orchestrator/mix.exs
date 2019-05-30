@@ -1,4 +1,4 @@
-defmodule Potterhat.Orchestrator.MixProject do
+defmodule PotterhatOrchestrator.MixProject do
   use Mix.Project
 
   def project do
@@ -19,7 +19,7 @@ defmodule Potterhat.Orchestrator.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Potterhat.Orchestrator.Application, []}
+      mod: {PotterhatOrchestrator.Application, []}
     ]
   end
 

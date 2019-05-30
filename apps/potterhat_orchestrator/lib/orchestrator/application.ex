@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Orchestrator.Application do
+defmodule PotterhatOrchestrator.Application do
   @moduledoc false
   use Application
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_orchestrator)
 
-    children = [Potterhat.Orchestrator.ActiveNodes | nodes()]
+    children = [PotterhatOrchestrator.ActiveNodes | nodes()]
 
-    opts = [strategy: :one_for_one, name: Potterhat.Orchestrator.Supervisor]
+    opts = [strategy: :one_for_one, name: PotterhatOrchestrator.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -29,7 +29,7 @@ defmodule Potterhat.Orchestrator.Application do
     node_configs = Application.get_env(:potterhat_orchestrator, :nodes)
 
     Enum.map(node_configs, fn config ->
-      config = Map.put(config, :node_registry, Potterhat.Orchestrator.ActiveNodes)
+      config = Map.put(config, :node_registry, PotterhatOrchestrator.ActiveNodes)
       id = Map.fetch!(config, :id)
 
       Supervisor.child_spec({PotterhatNode.Node, config}, id: id)

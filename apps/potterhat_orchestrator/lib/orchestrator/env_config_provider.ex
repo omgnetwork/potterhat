@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Orchestrator.EnvConfigProvider do
+defmodule PotterhatOrchestrator.EnvConfigProvider do
   use Mix.Releases.Config.Provider
   alias PotterhatNode.NodeConfig
   require Logger
