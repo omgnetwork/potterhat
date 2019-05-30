@@ -102,6 +102,10 @@ defmodule PotterhatNode.EventLogger do
     debug(message, opts)
   end
 
+  def log_event({type, data}, opts) do
+    warn("Unknown event #{inspect(type)} with data: #{inspect(data)}", opts)
+  end
+
   defp debug(message, opts), do: message |> prefix_with(opts) |> Logger.debug()
   defp info(message, opts), do: message |> prefix_with(opts) |> Logger.info()
   defp warn(message, opts), do: message |> prefix_with(opts) |> Logger.warn()

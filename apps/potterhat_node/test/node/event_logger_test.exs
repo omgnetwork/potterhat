@@ -225,4 +225,17 @@ defmodule PotterhatNode.EventLoggerTest do
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Sync stopped.+/, log)
     end
   end
+
+  describe "log_event/2" do
+    test "logs when received an unknown event", meta do
+      data = %{"result" => "some result"}
+
+      log =
+        capture_log(fn ->
+          EventLogger.log_event({:some_unknown_event, data}, meta.opts)
+        end)
+
+      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Unknown event :some_unknown_event with data:.+/, log)
+    end
+  end
 end
