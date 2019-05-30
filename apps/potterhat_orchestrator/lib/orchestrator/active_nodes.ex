@@ -18,12 +18,15 @@ defmodule PotterhatOrchestrator.ActiveNodes do
 
   @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    name = Keyword.get(opts, :name, __MODULE__)
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
   def child_spec(opts) do
+    id = Keyword.get(opts, :name, __MODULE__)
+
     %{
-      id: __MODULE__,
+      id: id,
       start: {__MODULE__, :start_link, [opts]},
       type: :worker,
       restart: :permanent,
@@ -31,26 +34,29 @@ defmodule PotterhatOrchestrator.ActiveNodes do
     }
   end
 
-  @spec all() :: [pid()]
-  def all, do: GenServer.call(__MODULE__, :all)
+  @spec all() :: [node :: pid()]
+  @spec all(server :: pid()) :: [node :: pid()]
+  def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
   @spec first() :: pid() | nil
-  def first, do: GenServer.call(__MODULE__, :first)
+  def first(server \\ __MODULE__), do: GenServer.call(server, :first)
 
   @doc """
   Registers an active node sorted against existing active nodes by its priority.
   """
-  @spec register(pid(), integer()) :: :ok
-  def register(pid, priority) do
-    GenServer.call(__MODULE__, {:register, pid, priority})
+  @spec register(node :: pid(), priority :: integer()) :: :ok
+  @spec register(server :: pid(), node :: pid(), priority :: integer()) :: :ok
+  def register(server \\ __MODULE__, pid, priority) do
+    GenServer.call(server, {:register, pid, priority})
   end
 
   @doc """
   Deregisters an active node.
   """
-  @spec deregister(pid()) :: :ok
-  def deregister(pid) do
-    GenServer.call(__MODULE__, {:deregister, pid})
+  @spec deregister(node :: pid()) :: :ok
+  @spec deregister(server :: pid(), node :: pid()) :: :ok
+  def deregister(server \\ __MODULE__, pid) do
+    GenServer.call(server, {:deregister, pid})
   end
 
   #
@@ -72,7 +78,7 @@ defmodule PotterhatOrchestrator.ActiveNodes do
   @impl true
   def handle_call(:first, _from, state) do
     first =
-      case state.pids do
+      case state do
         [] -> nil
         [pids | _] -> elem(pids, 0)
       end
