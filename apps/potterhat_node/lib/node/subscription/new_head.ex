@@ -24,6 +24,10 @@ defmodule PotterhatNode.Subscription.NewHead do
   # Client API
   #
 
+  @doc """
+  Starts a GenServer that listens to newHead events.
+  """
+  @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | no_return()
   def start_link(url, opts) do
     name = String.to_atom("listener_newheads_#{opts[:node_id]}")
     opts = Keyword.put(opts, :name, name)
@@ -51,6 +55,8 @@ defmodule PotterhatNode.Subscription.NewHead do
   # Server API
   #
 
+  @doc false
+  @spec init(Keyword.t()) :: {:ok, map()}
   def init(opts) do
     state = %{
       label: opts[:label],
@@ -60,6 +66,7 @@ defmodule PotterhatNode.Subscription.NewHead do
     {:ok, state}
   end
 
+  @doc false
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
