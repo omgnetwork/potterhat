@@ -32,7 +32,7 @@ defmodule Potterhat.Orchestrator.Application do
       config = Map.put(config, :node_registry, Potterhat.Orchestrator.ActiveNodes)
       id = Map.fetch!(config, :id)
 
-      Supervisor.child_spec({Potterhat.Node, config}, id: id)
+      Supervisor.child_spec({PotterhatNode.Node, config}, id: id)
     end)
   end
 end

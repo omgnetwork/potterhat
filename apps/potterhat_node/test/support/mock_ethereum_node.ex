@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.MockEthereumNode do
+defmodule PotterhatNode.MockEthereumNode do
   # This module is heavily inspired by WebSockex.TestServer.
   # See https://github.com/Azolo/websockex/blob/master/test/support/test_server.ex
   alias __MODULE__.{RPC, WebSocket}

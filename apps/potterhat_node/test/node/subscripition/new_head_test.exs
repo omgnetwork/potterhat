@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.NewHeadTest do
+defmodule PotterhatNode.NewHeadTest do
   use ExUnit.Case
-  import Potterhat.Node.EthereumTestHelper
-  alias Potterhat.Node.Subscription.NewHead
-  alias Potterhat.Node.MockListener
+  import PotterhatNode.EthereumTestHelper
+  alias PotterhatNode.Subscription.NewHead
+  alias PotterhatNode.MockListener
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.EventLogger do
+defmodule PotterhatNode.EventLogger do
   require Logger
 
   ## New block listening

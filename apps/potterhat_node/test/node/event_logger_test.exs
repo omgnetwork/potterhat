@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.EventLoggerTest do
+defmodule PotterhatNode.EventLoggerTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
-  alias Potterhat.Node.EventLogger
+  alias PotterhatNode.EventLogger
   require Logger
 
   setup do

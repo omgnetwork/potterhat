@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.SyncStatusTest do
+defmodule PotterhatNode.SyncStatusTest do
   use ExUnit.Case
-  import Potterhat.Node.EthereumTestHelper
-  alias Potterhat.Node.Subscription.SyncStatus
-  alias Potterhat.Node.MockListener
+  import PotterhatNode.EthereumTestHelper
+  alias PotterhatNode.Subscription.SyncStatus
+  alias PotterhatNode.MockListener
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.Subscription.SyncStatus do
+defmodule PotterhatNode.Subscription.SyncStatus do
   use WebSockex
 
   @subscription_id 2

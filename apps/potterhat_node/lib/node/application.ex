@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.Application do
+defmodule PotterhatNode.Application do
   @moduledoc false
   use Application
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_node)
 
-    opts = [strategy: :one_for_one, name: Potterhat.Node.Supervisor]
+    opts = [strategy: :one_for_one, name: PotterhatNode.Supervisor]
     Supervisor.start_link([], opts)
   end
 end

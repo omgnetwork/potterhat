@@ -1,4 +1,4 @@
-  defmodule Potterhat.Node.MockListener do
+  defmodule PotterhatNode.MockListener do
     use GenServer
 
     #

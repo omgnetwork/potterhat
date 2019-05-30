@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.LogTest do
+defmodule PotterhatNode.LogTest do
   use ExUnit.Case
-  import Potterhat.Node.EthereumTestHelper
-  alias Potterhat.Node.MockListener
-  alias Potterhat.Node.Subscription.Log
+  import PotterhatNode.EthereumTestHelper
+  alias PotterhatNode.MockListener
+  alias PotterhatNode.Subscription.Log
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()

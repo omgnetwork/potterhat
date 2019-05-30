@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.NodeTest do
+defmodule PotterhatNodeTest do
   use ExUnit.Case
-  import Potterhat.Node.EthereumTestHelper
-  alias Potterhat.Node
-  alias Potterhat.Node.RPCResponse
+  import PotterhatNode.EthereumTestHelper
+  alias PotterhatNode.Node
+  alias PotterhatNode.Node.RPCResponse
 
-  doctest Potterhat.Node
+  doctest PotterhatNode
 
-  @node_config %Potterhat.Node.NodeConfig{
+  @node_config %PotterhatNode.NodeConfig{
     id: :test_node_start_link,
-    label: "Test Node.start_link/1 GenServer",
+    label: "Test PotterhatNode.start_link/1 GenServer",
     client: :geth,
     rpc: "http://localhost",
     ws: "ws://localhost",

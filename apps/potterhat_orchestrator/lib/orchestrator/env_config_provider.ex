@@ -14,7 +14,7 @@
 
 defmodule Potterhat.Orchestrator.EnvConfigProvider do
   use Mix.Releases.Config.Provider
-  alias Potterhat.Node.NodeConfig
+  alias PotterhatNode.NodeConfig
   require Logger
 
   @doc """

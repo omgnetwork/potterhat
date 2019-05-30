@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.NewPendingTransactionTest do
+defmodule PotterhatNode.NewPendingTransactionTest do
   use ExUnit.Case
-  import Potterhat.Node.EthereumTestHelper
-  alias Potterhat.Node.Subscription.NewPendingTransaction
-  alias Potterhat.Node.MockListener
+  import PotterhatNode.EthereumTestHelper
+  alias PotterhatNode.Subscription.NewPendingTransaction
+  alias PotterhatNode.MockListener
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()

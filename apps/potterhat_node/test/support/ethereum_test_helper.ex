@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.EthereumTestHelper do
-  alias Potterhat.Node.MockEthereumNode
+defmodule PotterhatNode.EthereumTestHelper do
+  alias PotterhatNode.MockEthereumNode
 
   # Using macro here to inject on_exit/1 into the setup
   defmacro start_mock_node do

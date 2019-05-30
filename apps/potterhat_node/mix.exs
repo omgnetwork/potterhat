@@ -1,4 +1,4 @@
-defmodule Potterhat.Node.MixProject do
+defmodule PotterhatNode.MixProject do
   use Mix.Project
 
   def project do
@@ -19,7 +19,7 @@ defmodule Potterhat.Node.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Potterhat.Node.Application, []}
+      mod: {PotterhatNode.Application, []}
     ]
   end
 

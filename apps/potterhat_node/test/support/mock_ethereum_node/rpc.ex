@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule Potterhat.Node.MockEthereumNode.RPC do
+defmodule PotterhatNode.MockEthereumNode.RPC do
   use Plug.Router
 
   plug(:match)
