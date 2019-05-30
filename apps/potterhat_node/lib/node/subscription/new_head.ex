@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.Subscription.NewHead do
+  @moduledoc """
+  Listens for newHeads events.
+  """
   use WebSockex
 
   @subscription_id 1

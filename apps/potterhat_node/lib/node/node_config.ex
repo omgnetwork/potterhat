@@ -13,6 +13,10 @@
 # limitations under the License.
 
 defmodule PotterhatNode.NodeConfig do
+  @moduledoc """
+  Configurations for starting a `PotterhatNode.Node`.
+  """
+
   @enforce_keys [:id, :label, :client, :rpc, :ws, :priority]
   defstruct [:id, :label, :client, :rpc, :ws, :priority]
 

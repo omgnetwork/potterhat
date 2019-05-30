@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode do
+defmodule PotterhatOrchestrator do
   @moduledoc """
-  The Potterhat's sub-application responsible for listening to events,
-  and exchange data to/from Ethereum nodes.
+  The Potterhat's sub-application responsible orchestrating various sub-applications
+  and their components to form a single resilient Ethereum client.
   """
 end

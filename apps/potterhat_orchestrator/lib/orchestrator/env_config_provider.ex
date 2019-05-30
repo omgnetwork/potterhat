@@ -13,6 +13,10 @@
 # limitations under the License.
 
 defmodule PotterhatOrchestrator.EnvConfigProvider do
+  @moduledoc """
+  A Mix.Releases-compatible config provider that converts
+  Potterhat-related environment variables into application configs.
+  """
   use Mix.Releases.Config.Provider
   alias PotterhatNode.NodeConfig
   require Logger

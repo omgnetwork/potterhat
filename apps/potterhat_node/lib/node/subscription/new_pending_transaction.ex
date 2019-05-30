@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.Subscription.NewPendingTransaction do
+  @moduledoc """
+  Listens for new pending transaction events.
+  """
   use WebSockex
 
   @subscription_id 4

@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.Subscription.SyncStatus do
+  @moduledoc """
+  Listens for sync status events.
+  """
   use WebSockex
 
   @subscription_id 2

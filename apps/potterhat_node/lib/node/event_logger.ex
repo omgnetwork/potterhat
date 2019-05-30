@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.EventLogger do
+  @moduledoc """
+  Logs received events.
+  """
   require Logger
 
   ## New block listening

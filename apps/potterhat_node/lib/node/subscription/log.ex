@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.Subscription.Log do
+  @moduledoc """
+  Listens for log events.
+  """
   use WebSockex
 
   @subscription_id 3

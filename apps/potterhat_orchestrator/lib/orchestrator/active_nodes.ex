@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatOrchestrator.ActiveNodes do
+  @moduledoc """
+  A singleton GenServer that maintains the registry of currently active nodes.
+  """
   use GenServer
   require Logger
 
