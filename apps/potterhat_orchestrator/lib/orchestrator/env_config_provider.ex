@@ -24,6 +24,7 @@ defmodule PotterhatOrchestrator.EnvConfigProvider do
   @doc """
   Initialize the nodes configuration into the application.
   """
+  @spec init(any()) :: :ok | no_return()
   def init(_opts) do
     __MODULE__.get_configs() |> apply()
   end
@@ -31,6 +32,7 @@ defmodule PotterhatOrchestrator.EnvConfigProvider do
   @doc """
   Returns the nodes configuration.
   """
+  @spec get_configs() :: map() | no_return()
   def get_configs do
     System.get_env()
     |> parse()

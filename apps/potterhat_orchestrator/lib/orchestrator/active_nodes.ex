@@ -19,12 +19,18 @@ defmodule PotterhatOrchestrator.ActiveNodes do
   use GenServer
   require Logger
 
+  @doc """
+  Starts a new instance of `ActiveNodes`.
+  """
   @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.start_link(__MODULE__, opts, name: name)
   end
 
+  @doc """
+  Generate a child specification for `ActiveNodes`.
+  """
   def child_spec(opts) do
     id = Keyword.get(opts, :name, __MODULE__)
 
@@ -37,11 +43,18 @@ defmodule PotterhatOrchestrator.ActiveNodes do
     }
   end
 
+  @doc """
+  Returns a list of pids of all active nodes.
+  """
   @spec all() :: [node :: pid()]
   @spec all(server :: pid()) :: [node :: pid()]
   def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
+  @doc """
+  Returns the pid of the active node with the highest priority.
+  """
   @spec first() :: pid() | nil
+  @spec first(server :: pid()) :: pid() | nil
   def first(server \\ __MODULE__), do: GenServer.call(server, :first)
 
   @doc """
@@ -66,18 +79,21 @@ defmodule PotterhatOrchestrator.ActiveNodes do
   # Server API
   #
 
+  @doc false
   @impl true
   def init(_opts) do
     state = []
     {:ok, state}
   end
 
+  @doc false
   @impl true
   def handle_call(:all, _from, state) do
     pids = Enum.map(state, fn {pid, _priority} -> pid end)
     {:reply, pids, state}
   end
 
+  @doc false
   @impl true
   def handle_call(:first, _from, state) do
     first =
@@ -89,6 +105,7 @@ defmodule PotterhatOrchestrator.ActiveNodes do
     {:reply, first, state}
   end
 
+  @doc false
   @impl true
   def handle_call({:register, pid, priority}, _from, pids) do
     prepended = [{pid, priority} | pids]
@@ -98,6 +115,7 @@ defmodule PotterhatOrchestrator.ActiveNodes do
     {:reply, :ok, pids}
   end
 
+  @doc false
   @impl true
   def handle_call({:deregister, pid_to_delete}, _from, pids) do
     pids = Enum.reject(pids, fn {pid, _priority} -> pid == pid_to_delete end)
