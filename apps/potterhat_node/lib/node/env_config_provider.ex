@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatOrchestrator.EnvConfigProvider do
+defmodule PotterhatNode.EnvConfigProvider do
   @moduledoc """
   A Mix.Releases-compatible config provider that converts
   Potterhat-related environment variables into application configs.
@@ -91,6 +91,6 @@ defmodule PotterhatOrchestrator.EnvConfigProvider do
 
   # Apply the nodes configuration to the application
   defp apply(nodes) do
-    Application.put_env(:potterhat_orchestrator, :nodes, nodes)
+    Application.put_env(:potterhat_node, :nodes, nodes)
   end
 end

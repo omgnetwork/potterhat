@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatOrchestrator.ActiveNodes do
+defmodule PotterhatNode.ActiveNodes do
   @moduledoc """
   A singleton GenServer that maintains the registry of currently active nodes.
   """

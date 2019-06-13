@@ -19,7 +19,20 @@ defmodule PotterhatNode.Application do
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_node)
 
+    children = [PotterhatNode.ActiveNodes | nodes()]
+
     opts = [strategy: :one_for_one, name: PotterhatNode.Supervisor]
-    Supervisor.start_link([], opts)
+    Supervisor.start_link(children, opts)
+  end
+
+  defp nodes() do
+    node_configs = Application.get_env(:potterhat_node, :nodes)
+
+    Enum.map(node_configs, fn config ->
+      config = Map.put(config, :node_registry, PotterhatNode.ActiveNodes)
+      id = Map.fetch!(config, :id)
+
+      Supervisor.child_spec({PotterhatNode.Node, config}, id: id)
+    end)
   end
 end

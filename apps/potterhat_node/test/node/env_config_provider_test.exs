@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatOrchestrator.EnvConfigProviderTest do
+defmodule PotterhatNode.EnvConfigProviderTest do
   # Cannot be asynchronous as the tests need to manipulate environment variables
   use ExUnit.Case, async: false
-  alias PotterhatOrchestrator.EnvConfigProvider
+  alias PotterhatNode.EnvConfigProvider
 
   @env_prefix "POTTERHAT_NODE_"
 
@@ -36,8 +36,8 @@ defmodule PotterhatOrchestrator.EnvConfigProviderTest do
     # Wipe all potterhat app envs so they don't intefere with the system under test.
     #
 
-    potterhat_app_envs = Application.get_env(:potterhat_orchestrator, :nodes)
-    :ok = Application.put_env(:potterhat_orchestrator, :nodes, [])
+    potterhat_app_envs = Application.get_env(:potterhat_node, :nodes)
+    :ok = Application.put_env(:potterhat_node, :nodes, [])
 
     #
     # Restore env vars and app vars to their original states.
@@ -45,7 +45,7 @@ defmodule PotterhatOrchestrator.EnvConfigProviderTest do
     #
     on_exit(fn ->
       :ok = Enum.each(potterhat_env_vars, fn {key, value} -> System.put_env(key, value) end)
-      :ok = Application.put_env(:potterhat_orchestrator, :nodes, potterhat_app_envs)
+      :ok = Application.put_env(:potterhat_node, :nodes, potterhat_app_envs)
     end)
 
     :ok
@@ -116,12 +116,12 @@ defmodule PotterhatOrchestrator.EnvConfigProviderTest do
 
       :ok = set_envs(envs, 1)
 
-      assert Application.get_env(:potterhat_orchestrator, :nodes) == []
+      assert Application.get_env(:potterhat_node, :nodes) == []
 
       result = EnvConfigProvider.init([])
       assert result == :ok
 
-      nodes = Application.get_env(:potterhat_orchestrator, :nodes)
+      nodes = Application.get_env(:potterhat_node, :nodes)
       assert length(nodes) == 1
       assert hd(nodes).id == :"#{envs.id}"
     end

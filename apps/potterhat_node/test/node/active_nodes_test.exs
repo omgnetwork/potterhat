@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatOrchestrator.ActiveNodesTest do
+defmodule PotterhatNode.ActiveNodesTest do
   use ExUnit.Case
-  alias PotterhatOrchestrator.ActiveNodes
+  alias PotterhatNode.ActiveNodes
 
   setup do
     # Starts an isolated ActiveNodes server so we can test different cases independently.
