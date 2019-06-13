@@ -239,7 +239,6 @@ defmodule PotterhatNode.Node do
       _ -> false
     end)
 
-    _ = HTTPoison.start()
     raw = HTTPoison.post!(state[:rpc], encoded_params, header_params)
 
     # This encapsulates 3rd party struct into our own.
