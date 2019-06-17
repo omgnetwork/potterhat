@@ -15,8 +15,8 @@
 defmodule PotterhatNode.LogTest do
   use ExUnit.Case
   import PotterhatNode.EthereumTestHelper
-  alias PotterhatNode.MockListener
-  alias PotterhatNode.Subscription.Log
+  alias PotterhatNode.Listener.Log
+  alias PotterhatNode.MockNode
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()
@@ -29,8 +29,8 @@ defmodule PotterhatNode.LogTest do
 
   describe "start_link/2" do
     test "returns a pid", meta do
-      {:ok, listener_pid} = GenServer.start_link(MockListener, [])
-      {res, pid} = Log.start_link(meta.websocket_url, listener: listener_pid)
+      {:ok, node_pid} = GenServer.start_link(MockNode, [])
+      {res, pid} = Log.start_link(meta.websocket_url, subscriber: node_pid)
 
       assert res == :ok
       assert is_pid(pid)
@@ -38,20 +38,20 @@ defmodule PotterhatNode.LogTest do
   end
 
   describe "on receving websocket packets" do
-    test "notifies the listener", meta do
-      {:ok, listener_pid} = GenServer.start_link(MockListener, [])
+    test "notifies the subsciber", meta do
+      {:ok, node_pid} = GenServer.start_link(MockNode, [])
 
-      assert MockListener.get_events(listener_pid) == []
+      assert MockNode.get_events(node_pid) == []
 
       # When the listener starts up, it should automatically make a subscription,
       # and we should get one response in return.
-      {:ok, _} = Log.start_link(meta.websocket_url, listener: listener_pid)
+      {:ok, _} = Log.start_link(meta.websocket_url, subscriber: node_pid)
 
       # I know, this sucks right?
       # Feel free to refactor into a synchronous wait if there is a way.
       Process.sleep(100)
 
-      events = MockListener.get_events(listener_pid)
+      events = MockNode.get_events(node_pid)
 
       assert length(events) == 1
       assert {:event_received, :logs, _} = hd(events)

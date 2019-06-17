@@ -12,30 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.Subscription.SyncStatus do
+defmodule PotterhatNode.Listener.Log do
   @moduledoc """
-  Listens for sync status events.
+  Listens for log events.
   """
   use WebSockex
 
-  @subscription_id 2
+  @subscription_id 3
 
   #
   # Client API
   #
 
   @doc """
-  Starts a GenServer that listens to syncStatus events.
+  Starts a GenServer that listens to log events.
   """
   @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | no_return()
   def start_link(url, opts) do
-    name = String.to_atom("listener_syncstatus_#{opts[:node_id]}")
+    name = String.to_atom("#{opts[:node_id]}_logs")
     opts = Keyword.put(opts, :name, name)
 
-    {:ok, pid} = WebSockex.start_link(url, __MODULE__, opts, opts)
-    :ok = listen(pid)
+    case WebSockex.start_link(url, __MODULE__, opts, opts) do
+      {:ok, pid} ->
+        listen(pid)
+        {:ok, pid}
 
-    {:ok, pid}
+      error ->
+        error
+    end
   end
 
   defp listen(pid) do
@@ -44,7 +48,8 @@ defmodule PotterhatNode.Subscription.SyncStatus do
       id: @subscription_id,
       method: "eth_subscribe",
       params: [
-        "syncing"
+        "logs",
+        %{}
       ]
     }
 
@@ -60,7 +65,7 @@ defmodule PotterhatNode.Subscription.SyncStatus do
   def init(opts) do
     state = %{
       label: opts[:label],
-      listener: opts[:listener]
+      subscriber: opts[:subscriber]
     }
 
     {:ok, state}
@@ -70,7 +75,7 @@ defmodule PotterhatNode.Subscription.SyncStatus do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:event_received, :sync_status, decoded})
+    _ = GenServer.cast(state[:subscriber], {:event_received, :logs, decoded})
     {:ok, state}
   end
 end

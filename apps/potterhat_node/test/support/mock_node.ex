@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-  defmodule PotterhatNode.MockListener do
+  defmodule PotterhatNode.MockNode do
     use GenServer
 
     #

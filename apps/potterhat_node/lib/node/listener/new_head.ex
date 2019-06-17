@@ -12,30 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.Subscription.Log do
+defmodule PotterhatNode.Listener.NewHead do
   @moduledoc """
-  Listens for log events.
+  Listens for newHeads events.
   """
   use WebSockex
 
-  @subscription_id 3
+  @subscription_id 1
 
   #
   # Client API
   #
 
   @doc """
-  Starts a GenServer that listens to log events.
+  Starts a GenServer that listens to newHead events.
   """
   @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | no_return()
   def start_link(url, opts) do
-    name = String.to_atom("listener_logs_#{opts[:node_id]}")
+    name = String.to_atom("#{opts[:node_id]}_newheads")
     opts = Keyword.put(opts, :name, name)
 
-    {:ok, pid} = WebSockex.start_link(url, __MODULE__, opts, opts)
-    :ok = listen(pid)
+    case WebSockex.start_link(url, __MODULE__, opts, opts) do
+      {:ok, pid} ->
+        listen(pid)
+        {:ok, pid}
 
-    {:ok, pid}
+      error ->
+        error
+    end
   end
 
   defp listen(pid) do
@@ -44,12 +48,11 @@ defmodule PotterhatNode.Subscription.Log do
       id: @subscription_id,
       method: "eth_subscribe",
       params: [
-        "logs",
-        %{}
+        "newHeads"
       ]
     }
 
-    WebSockex.send_frame(pid, {:text, Jason.encode!(payload)})
+    :ok = WebSockex.send_frame(pid, {:text, Jason.encode!(payload)})
   end
 
   #
@@ -61,7 +64,7 @@ defmodule PotterhatNode.Subscription.Log do
   def init(opts) do
     state = %{
       label: opts[:label],
-      listener: opts[:listener]
+      subscriber: opts[:subscriber]
     }
 
     {:ok, state}
@@ -71,7 +74,7 @@ defmodule PotterhatNode.Subscription.Log do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:event_received, :logs, decoded})
+    _ = GenServer.cast(state[:subscriber], {:event_received, :new_heads, decoded})
     {:ok, state}
   end
 end

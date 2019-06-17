@@ -12,30 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.Subscription.NewPendingTransaction do
+defmodule PotterhatNode.Listener.SyncStatus do
   @moduledoc """
-  Listens for new pending transaction events.
+  Listens for sync status events.
   """
   use WebSockex
 
-  @subscription_id 4
+  @subscription_id 2
 
   #
   # Client API
   #
 
   @doc """
-  Starts a GenServer that listens to newPendingTransaction events.
+  Starts a GenServer that listens to syncStatus events.
   """
   @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | no_return()
   def start_link(url, opts) do
-    name = String.to_atom("listener_newpendingtransactions_#{opts[:node_id]}")
+    name = String.to_atom("#{opts[:node_id]}_syncstatus")
     opts = Keyword.put(opts, :name, name)
 
-    {:ok, pid} = WebSockex.start_link(url, __MODULE__, opts, opts)
-    :ok = listen(pid)
+    case WebSockex.start_link(url, __MODULE__, opts, opts) do
+      {:ok, pid} ->
+        listen(pid)
+        {:ok, pid}
 
-    {:ok, pid}
+      error ->
+        error
+    end
   end
 
   defp listen(pid) do
@@ -44,7 +48,7 @@ defmodule PotterhatNode.Subscription.NewPendingTransaction do
       id: @subscription_id,
       method: "eth_subscribe",
       params: [
-        "newPendingTransactions"
+        "syncing"
       ]
     }
 
@@ -60,7 +64,7 @@ defmodule PotterhatNode.Subscription.NewPendingTransaction do
   def init(opts) do
     state = %{
       label: opts[:label],
-      listener: opts[:listener]
+      subscriber: opts[:subscriber]
     }
 
     {:ok, state}
@@ -70,7 +74,7 @@ defmodule PotterhatNode.Subscription.NewPendingTransaction do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:listener], {:event_received, :new_pending_transactions, decoded})
+    _ = GenServer.cast(state[:subscriber], {:event_received, :sync_status, decoded})
     {:ok, state}
   end
 end
