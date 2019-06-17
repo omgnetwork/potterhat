@@ -13,9 +13,14 @@
 # limitations under the License.
 
 defmodule PotterhatNode.MockEthereumNode do
+  @moduledoc """
+  A mock of an Ethereum node for testing purposes.
+  """
   # This module is heavily inspired by WebSockex.TestServer.
   # See https://github.com/Azolo/websockex/blob/master/test/support/test_server.ex
   alias __MODULE__.{RPC, WebSocket}
+  alias Plug.Cowboy
+  alias Plug.Cowboy.Handler
 
   def start(pid) when is_pid(pid) do
     ref = make_ref()
@@ -26,7 +31,7 @@ defmodule PotterhatNode.MockEthereumNode do
 
     opts = [dispatch: dispatch({pid, agent_pid}), port: port, ref: ref]
 
-    case Plug.Cowboy.http(__MODULE__, [], opts) do
+    case Cowboy.http(__MODULE__, [], opts) do
       {:ok, _} ->
         {:ok, {ref, rpc_url, ws_url}}
 
@@ -40,14 +45,14 @@ defmodule PotterhatNode.MockEthereumNode do
   end
 
   def shutdown(ref) do
-    Plug.Cowboy.shutdown(ref)
+    Cowboy.shutdown(ref)
   end
 
   def receive_socket_pid do
     receive do
       pid when is_pid(pid) -> pid
     after
-      10000 -> raise "No Server Socket pid"
+      10_000 -> raise "No Server Socket pid"
     end
   end
 
@@ -55,7 +60,7 @@ defmodule PotterhatNode.MockEthereumNode do
     [
       {:_, [
         {"/ws", WebSocket, [tuple]},
-        {:_, Plug.Cowboy.Handler, {RPC, []}}
+        {:_, Handler, {RPC, []}}
       ]}
     ]
   end

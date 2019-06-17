@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.MockEthereumNode.RPC do
+  @moduledoc """
+  The mock RPC router for the Ethereum node mock.
+  """
   use Plug.Router
 
   plug(:match)

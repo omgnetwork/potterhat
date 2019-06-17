@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.MockEthereumNode.WebSocket do
+  @moduledoc """
+  The mock WebSocket server router for the Ethereum node mock.
+  """
   # This module is heavily inspired by WebSockex.TestServer.
   # See https://github.com/Azolo/websockex/blob/master/test/support/test_server.ex
   @behaviour :cowboy_websocket

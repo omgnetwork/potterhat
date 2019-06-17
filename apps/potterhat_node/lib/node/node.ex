@@ -22,6 +22,10 @@ defmodule PotterhatNode.Node do
   alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do
+    @moduledoc """
+    The struct for the response returned from an RPC call.
+    """
+
     @type t() :: %__MODULE__{
       status_code: non_neg_integer(),
       headers: Keyword.t(),

@@ -25,7 +25,7 @@ defmodule PotterhatNode.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp nodes() do
+  defp nodes do
     node_configs = Application.get_env(:potterhat_node, :nodes)
 
     Enum.map(node_configs, fn config ->

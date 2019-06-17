@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatNode.EthereumTestHelper do
+  @moduledoc """
+  Helper functions for testing any code that requires Ethereum.
+  """
   alias PotterhatNode.MockEthereumNode
 
   # Using macro here to inject on_exit/1 into the setup

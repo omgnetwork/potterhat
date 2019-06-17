@@ -192,9 +192,9 @@ defmodule PotterhatNode.EventLoggerTest do
           "result" => %{
             "syncing" => true,
             "status" => %{
-              "StartingBlock" => 674427,
-              "CurrentBlock" => 67400,
-              "HighestBlock" => 674432,
+              "StartingBlock" => 674_427,
+              "CurrentBlock" => 67_400,
+              "HighestBlock" => 674_432,
               "PulledStates" => 0,
               "KnownStates" => 0
             }
