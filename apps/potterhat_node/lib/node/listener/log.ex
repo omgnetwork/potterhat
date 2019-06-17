@@ -76,7 +76,7 @@ defmodule PotterhatNode.Listener.Log do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :logs, decoded}))
+    _ = broadcast_linked({:event_received, :logs, decoded})
     {:ok, state}
   end
 end

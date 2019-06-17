@@ -28,7 +28,7 @@ defmodule PotterhatNode.Listener.NewHead do
   @doc """
   Starts a GenServer that listens to newHead events.
   """
-  @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | no_return()
+  @spec start_link(String.t(), Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(url, opts) do
     name = String.to_atom("#{opts[:node_id]}_newheads")
     opts = Keyword.put(opts, :name, name)
@@ -74,7 +74,7 @@ defmodule PotterhatNode.Listener.NewHead do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :new_heads, decoded}))
+    _ = broadcast_linked({:event_received, :new_heads, decoded})
     {:ok, state}
   end
 end

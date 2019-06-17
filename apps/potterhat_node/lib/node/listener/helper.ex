@@ -20,11 +20,11 @@ defmodule PotterhatNode.Listener.Helper do
   @doc """
   Broadcast the given message to all linked processes.
   """
-  @spec broadcast(any()) :: :ok
-  def broadcast(message) do
+  @spec broadcast_linked(any()) :: :ok
+  def broadcast_linked(message) do
     {:links, links} = Process.info(self(), :links)
 
-    _ = Enum.each(parents, fn
+    _ = Enum.each(links, fn
       link when is_pid(link) ->
         :ok = GenServer.cast(link, message)
 
