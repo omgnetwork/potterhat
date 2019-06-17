@@ -17,6 +17,7 @@ defmodule PotterhatNode.Listener.Log do
   Listens for log events.
   """
   use WebSockex
+  import PotterhatNode.Listener.Helper
 
   @subscription_id 3
 
@@ -75,7 +76,7 @@ defmodule PotterhatNode.Listener.Log do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:subscriber], {:event_received, :logs, decoded})
+    _ = broadcast_linked({:event_received, :logs, decoded}))
     {:ok, state}
   end
 end

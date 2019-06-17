@@ -17,6 +17,7 @@ defmodule PotterhatNode.Listener.SyncStatus do
   Listens for sync status events.
   """
   use WebSockex
+  import PotterhatNode.Listener.Helper
 
   @subscription_id 2
 
@@ -74,7 +75,7 @@ defmodule PotterhatNode.Listener.SyncStatus do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:subscriber], {:event_received, :sync_status, decoded})
+    _ = broadcast_linked({:event_received, :sync_status, decoded}))
     {:ok, state}
   end
 end

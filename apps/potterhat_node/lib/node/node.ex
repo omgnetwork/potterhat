@@ -105,8 +105,7 @@ defmodule PotterhatNode.Node do
   def handle_continue(:listen, state) do
     opts = [
       node_id: state[:id],
-      label: state[:label],
-      subscriber: self()
+      label: state[:label]
     ]
 
     case NewHead.start_link(state[:ws], opts) do

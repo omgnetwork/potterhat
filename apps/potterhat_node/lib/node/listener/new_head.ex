@@ -17,6 +17,7 @@ defmodule PotterhatNode.Listener.NewHead do
   Listens for newHeads events.
   """
   use WebSockex
+  import PotterhatNode.Listener.Helper
 
   @subscription_id 1
 
@@ -63,8 +64,7 @@ defmodule PotterhatNode.Listener.NewHead do
   @spec init(Keyword.t()) :: {:ok, map()}
   def init(opts) do
     state = %{
-      label: opts[:label],
-      subscriber: opts[:subscriber]
+      label: opts[:label]
     }
 
     {:ok, state}
@@ -74,7 +74,7 @@ defmodule PotterhatNode.Listener.NewHead do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:subscriber], {:event_received, :new_heads, decoded})
+    _ = broadcast_linked({:event_received, :new_heads, decoded}))
     {:ok, state}
   end
 end

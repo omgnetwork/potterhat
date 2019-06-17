@@ -17,6 +17,7 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
   Listens for new pending transaction events.
   """
   use WebSockex
+  import PotterhatNode.Listener.Helper
 
   @subscription_id 4
 
@@ -74,7 +75,7 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = GenServer.cast(state[:subscriber], {:event_received, :new_pending_transactions, decoded})
+    _ = broadcast_linked({:event_received, :new_pending_transactions, decoded}))
     {:ok, state}
   end
 end
