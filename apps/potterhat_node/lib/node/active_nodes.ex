@@ -31,6 +31,7 @@ defmodule PotterhatNode.ActiveNodes do
   @doc """
   Generate a child specification for `ActiveNodes`.
   """
+  @spec child_spec(Keyword.t()) :: map()
   def child_spec(opts) do
     id = Keyword.get(opts, :name, __MODULE__)
 
@@ -46,22 +47,22 @@ defmodule PotterhatNode.ActiveNodes do
   @doc """
   Returns a list of pids of all active nodes.
   """
-  @spec all() :: [node :: pid()]
-  @spec all(server :: pid() | module()) :: [node :: pid()]
+  @spec all() :: [pid()]
+  @spec all(GenServer.server()) :: [pid()]
   def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
   @doc """
   Returns the pid of the active node with the highest priority.
   """
   @spec first() :: pid() | nil
-  @spec first(server :: pid() | module()) :: pid() | nil
+  @spec first(GenServer.server()) :: pid() | nil
   def first(server \\ __MODULE__), do: GenServer.call(server, :first)
 
   @doc """
   Registers an active node sorted against existing active nodes by its priority.
   """
-  @spec register(node :: pid(), priority :: integer()) :: :ok
-  @spec register(server :: pid() | module(), node :: pid(), priority :: integer()) :: :ok
+  @spec register(pid(), integer()) :: :ok
+  @spec register(GenServer.server()), pid(), integer()) :: :ok
   def register(server \\ __MODULE__, pid, priority) do
     GenServer.call(server, {:register, pid, priority})
   end
@@ -69,8 +70,8 @@ defmodule PotterhatNode.ActiveNodes do
   @doc """
   Deregisters an active node.
   """
-  @spec deregister(node :: pid()) :: :ok
-  @spec deregister(server :: pid() | module(), node :: pid()) :: :ok
+  @spec deregister(pid()) :: :ok
+  @spec deregister(GenServer.server(), pid()) :: :ok
   def deregister(server \\ __MODULE__, pid) do
     GenServer.call(server, {:deregister, pid})
   end
