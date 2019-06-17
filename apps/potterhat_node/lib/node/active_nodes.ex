@@ -31,7 +31,7 @@ defmodule PotterhatNode.ActiveNodes do
   @doc """
   Generate a child specification for `ActiveNodes`.
   """
-  @spec child_spec(Keyword.t()) :: map()
+  @spec child_spec(Keyword.t()) :: Supervisor.child_spec()
   def child_spec(opts) do
     id = Keyword.get(opts, :name, __MODULE__)
 
@@ -62,7 +62,7 @@ defmodule PotterhatNode.ActiveNodes do
   Registers an active node sorted against existing active nodes by its priority.
   """
   @spec register(pid(), integer()) :: :ok
-  @spec register(GenServer.server()), pid(), integer()) :: :ok
+  @spec register(GenServer.server(), pid(), integer()) :: :ok
   def register(server \\ __MODULE__, pid, priority) do
     GenServer.call(server, {:register, pid, priority})
   end
