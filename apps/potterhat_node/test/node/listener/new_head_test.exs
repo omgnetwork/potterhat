@@ -16,7 +16,6 @@ defmodule PotterhatNode.NewHeadTest do
   use ExUnit.Case
   import PotterhatNode.EthereumTestHelper
   alias PotterhatNode.Listener.NewHead
-  alias PotterhatNode.MockNode
 
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()
@@ -29,7 +28,6 @@ defmodule PotterhatNode.NewHeadTest do
 
   describe "start_link/2" do
     test "returns a pid", meta do
-      {:ok, _node_pid} = GenServer.start_link(MockNode, [])
       {res, pid} = NewHead.start_link(meta.websocket_url, [])
 
       assert res == :ok
@@ -38,23 +36,9 @@ defmodule PotterhatNode.NewHeadTest do
   end
 
   describe "on receving websocket packets" do
-    test "notifies the subsciber", meta do
-      {:ok, node_pid} = GenServer.start_link(MockNode, [])
-
-      assert MockNode.get_events(node_pid) == []
-
-      # When the listener starts up, it should automatically make a subscription,
-      # and we should get one response in return.
+    test "casts back an :event_received message", meta do
       {:ok, _} = NewHead.start_link(meta.websocket_url, [])
-
-      # I know, this sucks right?
-      # Feel free to refactor into a synchronous wait if there is a way.
-      Process.sleep(100)
-
-      events = MockNode.get_events(node_pid)
-
-      assert length(events) == 1
-      assert {:event_received, :new_heads, _} = hd(events)
+      assert_receive {:"$gen_cast", {:event_received, :new_heads, _}}
     end
   end
 end
