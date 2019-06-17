@@ -55,21 +55,6 @@ defmodule PotterhatNode.Node do
     GenServer.call(server, :get_priority)
   end
 
-  @spec subscribe(pid(), pid()) :: :ok
-  def subscribe(server, subscriber) do
-    GenServer.call(server, {:subscribe, subscriber})
-  end
-
-  @spec unsubscribe(pid(), pid()) :: :ok
-  def unsubscribe(server, unsubscriber) do
-    GenServer.call(server, {:unsubscribe, unsubscriber})
-  end
-
-  @spec get_subscribers(pid()) :: [pid()]
-  def get_subscribers(server) do
-    GenServer.call(server, :get_subscribers)
-  end
-
   @spec rpc_request(pid(), map(), map()) :: {:ok, %RPCResponse{}} | {:error, any()}
   def rpc_request(server, body_params, header_params) do
     GenServer.call(server, {:rpc_request, body_params, header_params})
@@ -92,10 +77,8 @@ defmodule PotterhatNode.Node do
       ws: Map.fetch!(opts, :ws),
       priority: Map.fetch!(opts, :priority),
       state: :starting,
-      listener: nil,
-      node_registry: Map.get(opts, :node_registry),
-      # TODO: Convert subscribers into a Registry
-      subscribers: []
+      event_listener: nil,
+      node_registry: Map.get(opts, :node_registry)
     }
 
     {:ok, state, {:continue, :listen}}
@@ -111,7 +94,7 @@ defmodule PotterhatNode.Node do
     case NewHead.start_link(state[:ws], opts) do
       {:ok, pid} ->
         _ = Logger.info("#{state.label} (#{inspect self()}): Connected.")
-        {:noreply, %{state | state: :registering, listener: pid}, {:continue, :register_with_manager}}
+        {:noreply, %{state | state: :registering, event_listener: pid}, {:continue, :register_with_manager}}
 
       {:error, error} ->
         retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
@@ -134,7 +117,7 @@ defmodule PotterhatNode.Node do
 
   # Handles termination of the event listener
   @impl true
-  def handle_info({:EXIT, listener_pid, reason}, %{listener: listener_pid} = state) do
+  def handle_info({:EXIT, pid, reason}, %{event_listener_listener: pid} = state) do
     _ = Logger.info("#{state.label} (#{inspect self()}: Event listener terminated with reason: #{inspect(reason)}")
 
     _ =
@@ -160,45 +143,6 @@ defmodule PotterhatNode.Node do
   @impl true
   def handle_call(:get_label, _from, state) do
     {:reply, state.label, state}
-  end
-
-  @impl true
-  def handle_call({:subscribe, subscriber}, _from, state) do
-    {response, new_state} =
-      state.subscribers
-      |> Enum.member?(subscriber)
-      |> case do
-        false ->
-          subscribed = [subscriber | state.subscribers]
-          {:ok, %{state | subscribers: subscribed}}
-
-        true ->
-          {{:error, :already_subscribed}, state}
-      end
-
-    {:reply, response, new_state}
-  end
-
-  @impl true
-  def handle_call({:unsubscribe, unsubscriber}, _from, state) do
-    {response, new_state} =
-      state.subscribers
-      |> Enum.member?(unsubscriber)
-      |> case do
-        true ->
-          unsubscribed = List.delete(state.subscribers, unsubscriber)
-          {:ok, %{state | subscribers: unsubscribed}}
-
-        false ->
-          {{:error, :not_subscribed}, state}
-      end
-
-    {:reply, response, new_state}
-  end
-
-  @impl true
-  def handle_call(:get_subscribers, _from, state) do
-    {:reply, state.subscribers, state}
   end
 
   @impl true
