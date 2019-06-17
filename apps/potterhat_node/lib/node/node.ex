@@ -19,7 +19,7 @@ defmodule PotterhatNode.Node do
   use GenServer
   require Logger
   alias PotterhatNode.EventLogger
-  alias PotterhatNode.Subscription.{Log, NewHead, NewPendingTransaction, SyncStatus}
+  alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do
     @type t() :: %__MODULE__{
@@ -92,45 +92,33 @@ defmodule PotterhatNode.Node do
       ws: Map.fetch!(opts, :ws),
       priority: Map.fetch!(opts, :priority),
       state: :starting,
+      listener: nil,
       node_registry: Map.get(opts, :node_registry),
-      listening_events: [],
       # TODO: Convert subscribers into a Registry
       subscribers: []
     }
 
-    {:ok, state, {:continue, :print_version}}
+    {:ok, state, {:continue, :listen}}
   end
 
   @impl true
-  def handle_info({:EXIT, _child_pid, reason}, state) do
-    {:stop, reason, state}
-  end
+  def handle_continue(:listen, state) do
+    opts = [
+      node_id: state[:id],
+      label: state[:label],
+      subscriber: self()
+    ]
 
-  @impl true
-  def terminate(reason, state) do
-    _ = Logger.info("#{state.label} (#{inspect self()}: Terminating because #{inspect(reason)}")
-
-    _ =
-      case state.node_registry do
-        nil -> :noop
-        registry -> registry.deregister(self())
-      end
-
-    reason
-  end
-
-  @impl true
-  def handle_continue(:print_version, state) do
-    case Ethereumex.HttpClient.web3_client_version(url: state[:rpc]) do
-      {:ok, version} ->
-        _ = Logger.info("#{state.label} (#{inspect self()}): Connected: #{version}")
-        {:noreply, %{state | state: :started}, {:continue, :register_with_manager}}
+    case NewHead.start_link(state[:ws], opts) do
+      {:ok, pid} ->
+        _ = Logger.info("#{state.label} (#{inspect self()}): Connected.")
+        {:noreply, %{state | state: :registering, listener: pid}, {:continue, :register_with_manager}}
 
       {:error, error} ->
         retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
-        _ = Logger.warn("#{state.label} (#{inspect self()}): Failed to connect: #{error}. Retrying in #{retry_period_ms} ms.")
-        Process.sleep(retry_period_ms)
-        {:noreply, %{state | state: :started}, {:continue, :print_version}}
+        _ = Logger.warn("#{state.label} (#{inspect self()}): Failed to connect: #{inspect(error)}. Retrying in #{retry_period_ms} ms.")
+        :ok = Process.sleep(retry_period_ms)
+        {:noreply, %{state | state: :restarting}, {:continue, :listen}}
     end
   end
 
@@ -142,42 +130,27 @@ defmodule PotterhatNode.Node do
         registry -> registry.register(self(), state.priority)
       end
 
-    {:noreply, state, {:continue, :subscribe_events}}
+    {:noreply, %{state | state: :started}}
   end
 
+  # Handles termination of the event listener
   @impl true
-  def handle_continue(:subscribe_events, state) do
-    opts = [
-      node_id: state[:id],
-      label: state[:label],
-      listener: self()
-    ]
+  def handle_info({:EXIT, listener_pid, reason}, %{listener: listener_pid} = state) do
+    _ = Logger.info("#{state.label} (#{inspect self()}: Event listener terminated with reason: #{inspect(reason)}")
 
-    listening_events =
-      :potterhat_node
-      |> Application.get_env(:listen_events)
-      |> Enum.reduce([], fn
-        :sync_status, events ->
-          SyncStatus.start_link(state[:ws], opts)
-          [:sync_status | events]
+    _ =
+      case state.node_registry do
+        nil -> :noop
+        registry -> registry.deregister(self())
+      end
 
-        :new_head, events ->
-          NewHead.start_link(state[:ws], opts)
-          [:new_head | events]
+    {:noreply, %{state | state: :restarting}, {:continue, :listen}}
+  end
 
-        :new_pending_transaction, events ->
-          NewPendingTransaction.start_link(state[:ws], opts)
-          [:new_pending_transaction | events]
-
-        :log, events ->
-          Log.start_link(state[:ws], opts)
-          [:log | events]
-
-        _, events ->
-          events
-      end)
-
-    {:noreply, %{state | state: :listening, listening_events: listening_events}}
+  # Ignore any other dying child if it is not the listener
+  @impl true
+  def handle_info({:EXIT, _, _}, state) do
+    {:noreply, state}
   end
 
   @impl true
