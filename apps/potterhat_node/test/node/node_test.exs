@@ -65,16 +65,6 @@ defmodule PotterhatNodeTest do
     end
   end
 
-  describe "stop/1" do
-    test "stops the node when given a node's pid", meta do
-      {:ok, pid} = Node.start_link(meta.config)
-      res = Node.stop(pid)
-
-      assert res == :ok
-      refute Process.alive?(pid)
-    end
-  end
-
   describe "get_label/1" do
     test "returns the node's label", meta do
       {:ok, pid} = Node.start_link(meta.config)

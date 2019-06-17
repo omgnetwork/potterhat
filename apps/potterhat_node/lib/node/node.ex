@@ -38,18 +38,13 @@ defmodule PotterhatNode.Node do
   # Client API
   #
 
-  @spec start_link(Keyword.t()) :: GenServer.on_start()
+  @spec start_link(map()) :: GenServer.on_start()
   def start_link(opts) do
     id = Map.fetch!(opts, :id)
     GenServer.start_link(__MODULE__, opts, name: id)
   end
 
-  @spec stop(Keyword.t() | pid()) :: :ok
-  def stop(server) do
-    GenServer.stop(server, :normal, 5000)
-  end
-
-  @spec get_label(Keyword.t() | pid()) :: String.t()
+  @spec get_label(pid()) :: String.t()
   def get_label(server) do
     GenServer.call(server, :get_label)
   end
@@ -173,7 +168,7 @@ defmodule PotterhatNode.Node do
 
   @impl true
   def handle_cast({:event_received, event, message}, state) do
-    EventLogger.log_event({event, message}, label: state.label, pid: self())
+    _ = EventLogger.log_event({event, message}, label: state.label, pid: self())
 
     {:noreply, state}
   end

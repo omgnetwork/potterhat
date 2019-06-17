@@ -35,7 +35,7 @@ defmodule PotterhatNode.Listener.SyncStatus do
 
     case WebSockex.start_link(url, __MODULE__, opts, opts) do
       {:ok, pid} ->
-        listen(pid)
+        _ = listen(pid)
         {:ok, pid}
 
       error ->

@@ -29,8 +29,8 @@ defmodule PotterhatNode.NewPendingTransactionTest do
 
   describe "start_link/2" do
     test "returns a pid", meta do
-      {:ok, node_pid} = GenServer.start_link(MockNode, [])
-      {res, pid} = NewPendingTransaction.start_link(meta.websocket_url, subscriber: node_pid)
+      {:ok, _node_pid} = GenServer.start_link(MockNode, [])
+      {res, pid} = NewPendingTransaction.start_link(meta.websocket_url, [])
 
       assert res == :ok
       assert is_pid(pid)
@@ -45,7 +45,7 @@ defmodule PotterhatNode.NewPendingTransactionTest do
 
       # When the listener starts up, it should automatically make a subscription,
       # and we should get one response in return.
-      {:ok, _} = NewPendingTransaction.start_link(meta.websocket_url, subscriber: node_pid)
+      {:ok, _} = NewPendingTransaction.start_link(meta.websocket_url, [])
 
       # I know, this sucks right?
       # Feel free to refactor into a synchronous wait if there is a way.

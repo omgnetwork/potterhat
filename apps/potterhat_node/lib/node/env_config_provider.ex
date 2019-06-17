@@ -32,7 +32,7 @@ defmodule PotterhatNode.EnvConfigProvider do
   @doc """
   Returns the nodes configuration.
   """
-  @spec get_configs() :: map() | no_return()
+  @spec get_configs() :: [%NodeConfig{}]
   def get_configs do
     System.get_env()
     |> parse()
