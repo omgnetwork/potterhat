@@ -70,7 +70,7 @@ build-test: deps
 #
 
 test: build-test
-	$(ENV_TEST) mix do ecto.create, ecto.migrate, test
+	$(ENV_TEST) mix test
 
 .PHONY: test
 
