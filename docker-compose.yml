@@ -4,7 +4,7 @@ version: "3"
 services:
   potterhat:
     # Use eWallet's base to avoid maintaining another one.
-    image: omisegoimages/ewallet-builder:v1.2
+    image: omisegoimages/ewallet-builder:stable
     restart: always
     environment:
       RPC_PORT: "8545"
