@@ -43,7 +43,13 @@ if [ "$AUTO" = 1 ]; then
     # git describe --tags will generate a version of the TAG, if HEAD is a tag,
     # or a TAG-NN-gSHA where NN is the number of commits since the last tag
     # and SHA256 is an abbrev-rev of HEAD, e.g. v1.2.0-pre.0-17-gaceb325f
-    VERSION=$(git describe --tags)
+    VERSION=$(git describe --tags 2> /dev/null)
+
+    if [ -z "$VERSION" ]; then
+        VERSION="v0.0.0"
+        printf 2>&1 "Could not define a version from git tags. Defaulting to v0.0.0.\\n"
+    fi
+
     VERSION=${VERSION#v*}
 
     printf 2>&1 "Using %s as the current version.\\n" "$VERSION"
