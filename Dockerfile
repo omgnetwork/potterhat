@@ -1,11 +1,9 @@
-FROM elixir:1.8-alpine
+FROM alpine:3.8
 
 LABEL maintainer="OmiseGO Team <omg@omise.co>"
-LABEL description="Potterhat"
+LABEL description="Official image for OmiseGO Potterhat"
 
 ENV LANG=C.UTF-8
-ENV MIX_ENV=prod
-ENV HOME=/app
 
 ## S6
 ##
@@ -27,30 +25,44 @@ RUN set -xe \
 ## Application
 ##
 
-RUN set -xe \
- && adduser -D -h /app app \
- && chown app:app /app
+RUN apk add --update --no-cache --virtual .potterhat-runtime \
+        bash \
+        imagemagick \
+        libressl \
+        libressl-dev \
+        lksctp-tools
 
+COPY rootfs /
+
+# USER directive is not being used here since privileges are dropped via
+# s6-setuigid in /entrypoint. s6-overlay is required to be run as root.
+ARG user=potterhat
+ARG group=potterhat
+ARG uid=10000
+ARG gid=10000
+
+RUN set -xe \
+ && addgroup -g ${gid} ${group} \
+ && adduser -D -h /app -u ${uid} -G ${group} ${user} \
+ && chown "${uid}:${gid}" "/app" \
+ && chmod +x /entrypoint
+
+ARG release_version
+
+ADD _build/prod/rel/potterhat/releases/${release_version}/potterhat.tar.gz /app
+RUN chown -R "${uid}:${gid}" /app
 WORKDIR /app
 
-COPY --chown=app mix.exs mix.lock ./
+# Potterhat is using PORT environment variable to determine which port to run
+# the application server.
+ENV PORT 4000
 
-RUN set -xe \
- && s6-setuidgid app mix do \
-      local.hex --force, \
-      local.rebar --force, \
-      deps.get, \
-      deps.compile
+EXPOSE $PORT
 
-COPY --chown=app apps ./apps
-COPY --chown=app config ./config
+# These are ports required for clustering. The range is defined in vm.args
+# in inet_dist_listen_min and inet_dist_listen_max.
+EXPOSE 4369 6900 6901 6902 6903 6904 6905 6906 6907 6908 6909
 
-RUN set -xe \
- && s6-setuidgid app mix compile
+ENTRYPOINT ["/init", "/entrypoint"]
 
-## Run
-##
-
-ENTRYPOINT ["/init"]
-
-CMD ["s6-setuidgid", "app", "mix", "run", "--no-halt"]
+CMD ["foreground"]
