@@ -67,7 +67,7 @@ defmodule PotterhatNode.MockEthereumNode do
   end
 
   defp get_port do
-    unless Process.whereis(__MODULE__), do: start_ports_agent()
+    _ = unless Process.whereis(__MODULE__), do: start_ports_agent()
 
     Agent.get_and_update(__MODULE__, fn port -> {port, port + 1} end)
   end
