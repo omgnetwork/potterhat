@@ -1,60 +1,86 @@
-#!/bin/sh -e
-#
-# Authenticates with Google Cloud CLI and publish the image to gcr.io.
-#
+#!/bin/sh
 
-if ! command -v docker >/dev/null; then
-    printf >&2 "Docker has not been installed.\\n"
-    exit 1
-fi
+set -e
 
-if ! command -v gcloud >/dev/null; then
-    printf >&2 "Google Cloud SDK has not been installed.\\n"
-    exit 1
-fi
+echo_info() {
+    printf "\\033[0;34m%s\\033[0;0m\\n" "$1"
+}
 
-if ! command -v git >/dev/null; then
-    printf >&2 "Git has not been installed.\\n"
-    exit 1
-fi
+echo_warn() {
+    printf "\\033[0;33m%s\\033[0;0m\\n" "$1"
+}
 
 
-## Figure out latest image and tags
+## Sanity check
 ##
+
+if [ -z "$DOCKER_PASS" ] || [ -z "$DOCKER_USER" ]; then
+    echo_warn "Docker credentials is not present, skipping publish."
+    exit 0
+fi
 
 if [ -z "$IMAGE_NAME" ]; then
-    printf >&2 "IMAGE_NAME has not been set.\\n"
+    echo_warn "IMAGE_NAME not present, failing."
     exit 1
 fi
 
-IMAGE_TAGS=$(git rev-parse --short HEAD)
 
-if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
-    docker tag "$IMAGE_NAME:$IMAGE_TAGS" "$IMAGE_NAME:latest"
-    IMAGE_TAGS="$IMAGE_TAGS latest"
+## Generate tags
+##
+
+if [ -n "$CIRCLE_SHA1" ]; then
+    _image_tag="$(printf "%s" "$CIRCLE_SHA1" | head -c 8)"
+fi
+
+if [ -n "$CIRCLE_TAG" ]; then
+    _ver="${CIRCLE_TAG#*v}"
+
+    # Given a v1.0.0-pre.1 tag, this will generate:
+    # - 1.0
+    # - 1.0.0-pre
+    # - 1.0.0-pre.1
+    while true; do
+        case "$_ver" in
+            *.* )
+                _image_tag="$_ver $_image_tag"
+                _ver="${_ver%.*}"
+                ;;
+            * )
+                break;;
+        esac
+    done
+
+    # In case the commit is HEAD of latest version branch, also tag stable.
+    if [ -n "$CIRCLE_REPOSITORY_URL" ] && [ -n "$CIRCLE_SHA1" ]; then
+        _stable_head="$(
+            git ls-remote --heads "$CIRCLE_REPOSITORY_URL" "v*" |
+            awk '/refs\/heads\/v[0-9]+\.[0-9]+$/ { LH=$1 } END { print LH }'
+        )"
+
+        if [ "$CIRCLE_SHA1" = "$_stable_head" ]; then
+            _image_tag="$_image_tag stable"
+        fi
+    fi
+else
+    case "$CIRCLE_BRANCH" in
+        master ) _image_tag="$_image_tag latest";;
+        v*     ) _image_tag="$_image_tag ${CIRCLE_BRANCH#*v}-dev";;
+        *      ) ;;
+    esac
 fi
 
 
-## Authenticate with Google Cloud SDK
+## Publishing
 ##
 
-if [ -z "$GCP_KEY_FILE" ] || [ -z "$GCP_ACCOUNT_ID" ]; then
-    printf >&2 "Deploy credentials not present.\\n"
-    exit 1
+if [ -f "$HOME/caches/docker-layers.tar" ]; then
+    docker load -i "$HOME/caches/docker-layers.tar"
 fi
 
-GCPFILE=$(mktemp)
-trap 'rm -f $GCPFILE' 0 1 2 3 6 14 15
-echo "$GCP_KEY_FILE" | base64 -d > "$GCPFILE"
+printf "%s\\n" "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-gcloud auth activate-service-account --key-file="$GCPFILE"
-gcloud config set project "$GCP_ACCOUNT_ID"
-gcloud auth configure-docker
-
-
-## Publish
-##
-
-for TAG in $IMAGE_TAGS; do
-    docker push "$IMAGE_NAME:$TAG"
+for tag in $_image_tag; do
+    echo_info "Publishing Docker image as $IMAGE_NAME:$tag"
+    docker tag "$IMAGE_NAME" "$IMAGE_NAME:$tag"
+    docker push "$IMAGE_NAME:$tag"
 done
