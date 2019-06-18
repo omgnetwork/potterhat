@@ -10,7 +10,7 @@ executors:
 
   builder:
     docker:
-      - image: omisegoimages/ewallet-builder:v1.2
+      - image: omisegoimages/ewallet-builder:stable
     working_directory: ~/src
 
   deploy:
