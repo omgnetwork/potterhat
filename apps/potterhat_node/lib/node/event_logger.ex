@@ -37,7 +37,7 @@ defmodule PotterhatNode.EventLogger do
       |> Base.decode16!(case: :mixed)
       |> :binary.decode_unsigned()
 
-    debug("New block #{inspect block_number}: #{block_hash}", opts)
+    debug("New block #{inspect(block_number)}: #{block_hash}", opts)
   end
 
   ## Logs listening
@@ -60,7 +60,8 @@ defmodule PotterhatNode.EventLogger do
 
   ## New pending transactions listening
 
-  def log_event({:new_pending_transactions, %{"result" => result}}, opts) when is_binary(result) do
+  def log_event({:new_pending_transactions, %{"result" => result}}, opts)
+      when is_binary(result) do
     info("Listening for new_pending_transactions started...", opts)
   end
 
@@ -91,13 +92,12 @@ defmodule PotterhatNode.EventLogger do
   end
 
   def log_event({:sync_status, %{"params" => %{"result" => result}}}, opts) do
-    message =
-      """
-      Sync started.
-        - Starting block: #{result["status"]["StartingBlock"]}"
-        - Current block: #{result["status"]["CurrentBlock"]}"
-        - Highest block: #{result["status"]["HighestBlock"]}"
-      """
+    message = """
+    Sync started.
+      - Starting block: #{result["status"]["StartingBlock"]}"
+      - Current block: #{result["status"]["CurrentBlock"]}"
+      - Highest block: #{result["status"]["HighestBlock"]}"
+    """
 
     debug(message, opts)
   end

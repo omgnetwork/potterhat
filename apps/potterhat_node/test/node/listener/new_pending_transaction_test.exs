@@ -20,10 +20,11 @@ defmodule PotterhatNode.NewPendingTransactionTest do
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()
 
-    {:ok, %{
-      rpc_url: rpc_url,
-      websocket_url: websocket_url
-    }}
+    {:ok,
+     %{
+       rpc_url: rpc_url,
+       websocket_url: websocket_url
+     }}
   end
 
   describe "start_link/2" do

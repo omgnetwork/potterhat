@@ -58,10 +58,11 @@ defmodule PotterhatNode.MockEthereumNode do
 
   defp dispatch(tuple) do
     [
-      {:_, [
-        {"/ws", WebSocket, [tuple]},
-        {:_, Handler, {RPC, []}}
-      ]}
+      {:_,
+       [
+         {"/ws", WebSocket, [tuple]},
+         {:_, Handler, {RPC, []}}
+       ]}
     ]
   end
 

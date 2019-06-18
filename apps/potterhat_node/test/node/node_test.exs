@@ -34,13 +34,14 @@ defmodule PotterhatNodeTest do
 
     config =
       @node_config
-      |> Map.put(:id, String.to_atom("#{@node_config.id}_#{:rand.uniform(999999999)}"))
+      |> Map.put(:id, String.to_atom("#{@node_config.id}_#{:rand.uniform(999_999_999)}"))
       |> Map.put(:rpc, rpc_url)
       |> Map.put(:ws, websocket_url)
 
-    {:ok, %{
-      config: config
-    }}
+    {:ok,
+     %{
+       config: config
+     }}
   end
 
   describe "start_link/1" do

@@ -27,10 +27,10 @@ defmodule PotterhatNode.Node do
     """
 
     @type t() :: %__MODULE__{
-      status_code: non_neg_integer(),
-      headers: Keyword.t(),
-      body: String.t()
-    }
+            status_code: non_neg_integer(),
+            headers: Keyword.t(),
+            body: String.t()
+          }
     defstruct status_code: nil, headers: nil, body: nil
   end
 
@@ -92,12 +92,21 @@ defmodule PotterhatNode.Node do
 
     case NewHead.start_link(state[:ws], opts) do
       {:ok, pid} ->
-        _ = Logger.info("#{state.label} (#{inspect self()}): Connected.")
-        {:noreply, %{state | state: :registering, event_listener: pid}, {:continue, :register_with_manager}}
+        _ = Logger.info("#{state.label} (#{inspect(self())}): Connected.")
+
+        {:noreply, %{state | state: :registering, event_listener: pid},
+         {:continue, :register_with_manager}}
 
       {:error, error} ->
         retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
-        _ = Logger.warn("#{state.label} (#{inspect self()}): Failed to connect: #{inspect(error)}. Retrying in #{retry_period_ms} ms.")
+
+        _ =
+          Logger.warn(
+            "#{state.label} (#{inspect(self())}): Failed to connect: #{inspect(error)}. Retrying in #{
+              retry_period_ms
+            } ms."
+          )
+
         :ok = Process.sleep(retry_period_ms)
         {:noreply, %{state | state: :restarting}, {:continue, :listen}}
     end
@@ -117,7 +126,12 @@ defmodule PotterhatNode.Node do
   # Handles termination of the event listener
   @impl true
   def handle_info({:EXIT, pid, reason}, %{event_listener_listener: pid} = state) do
-    _ = Logger.info("#{state.label} (#{inspect self()}: Event listener terminated with reason: #{inspect(reason)}")
+    _ =
+      Logger.info(
+        "#{state.label} (#{inspect(self())}: Event listener terminated with reason: #{
+          inspect(reason)
+        }"
+      )
 
     _ =
       case state.node_registry do
@@ -149,10 +163,11 @@ defmodule PotterhatNode.Node do
     encoded_params = Jason.encode!(body_params)
 
     # Send only supported headers. Infura doesn't like extra headers.
-    header_params = Enum.filter(header_params, fn
-      {"content-type", _} -> true
-      _ -> false
-    end)
+    header_params =
+      Enum.filter(header_params, fn
+        {"content-type", _} -> true
+        _ -> false
+      end)
 
     raw = HTTPoison.post!(state[:rpc], encoded_params, header_params)
 

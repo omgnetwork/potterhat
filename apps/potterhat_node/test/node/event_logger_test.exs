@@ -24,13 +24,12 @@ defmodule PotterhatNode.EventLoggerTest do
     :ok = Logger.configure(level: :debug)
     on_exit(fn -> Logger.configure(level: original_level) end)
 
-    meta =
-      %{
-        opts: [
-          label: "The Node",
-          pid: self()
-        ]
-      }
+    meta = %{
+      opts: [
+        label: "The Node",
+        pid: self()
+      ]
+    }
 
     {:ok, meta}
   end
@@ -55,7 +54,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:new_heads, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Failed to listen to new heads: .+"some error".+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Failed to listen to new heads: .+"some error".+/,
+               log
+             )
     end
 
     test "logs when a new head is received", meta do
@@ -90,7 +92,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:logs, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Failed to listen to logs: .+"some error".+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Failed to listen to logs: .+"some error".+/,
+               log
+             )
     end
 
     test "logs when a new log is received", meta do
@@ -125,7 +130,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for new_pending_transactions started.+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Listening for new_pending_transactions started.+/,
+               log
+             )
     end
 
     test "logs when listening failed", meta do
@@ -136,7 +144,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Failed to listen to new_pending_transactions: .+"some error".+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Failed to listen to new_pending_transactions: .+"some error".+/,
+               log
+             )
     end
 
     test "logs when a new pending transactions is received", meta do
@@ -147,7 +158,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): New new_pending_transactions data: .+ "some data"/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): New new_pending_transactions data: .+ "some data"/,
+               log
+             )
     end
 
     test "logs when an unknown pending transactions is received", meta do
@@ -158,7 +172,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Unknown new_pending_transactions data: "unknown data"/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Unknown new_pending_transactions data: "unknown data"/,
+               log
+             )
     end
   end
 
@@ -182,7 +199,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:sync_status, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Failed to listen to sync status: .+"some error".+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Failed to listen to sync status: .+"some error".+/,
+               log
+             )
     end
 
     test "logs when a sync starts", meta do
@@ -235,7 +255,10 @@ defmodule PotterhatNode.EventLoggerTest do
           EventLogger.log_event({:some_unknown_event, data}, meta.opts)
         end)
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Unknown event :some_unknown_event with data:.+/, log)
+      assert Regex.match?(
+               ~r/.+The Node \(#PID<.+>\): Unknown event :some_unknown_event with data:.+/,
+               log
+             )
     end
   end
 end

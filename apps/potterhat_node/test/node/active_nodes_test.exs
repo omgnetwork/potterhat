@@ -21,11 +21,12 @@ defmodule PotterhatNode.ActiveNodesTest do
     # In real world use case we only need a single instance of ActiveNodes,
     # so we can call ActiveNodes functions without passing its pid, unlike these tests.
     {:ok, active_nodes_pid} =
-      GenServer.start_link(ActiveNodes, [], name: :"active_nodes_#{:rand.uniform(99999999)}")
+      GenServer.start_link(ActiveNodes, [], name: :"active_nodes_#{:rand.uniform(99_999_999)}")
 
-    {:ok, %{
-      active_nodes_pid: active_nodes_pid
-    }}
+    {:ok,
+     %{
+       active_nodes_pid: active_nodes_pid
+     }}
   end
 
   describe "all/1" do

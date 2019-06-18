@@ -22,11 +22,12 @@ defmodule PotterhatNode.MockEthereumNode.RPC do
   plug(:dispatch)
 
   post "/" do
-    response = Jason.encode!(%{
-      "id" => 67,
-      "jsonrpc" => "2.0",
-      "result" => "Mist/v0.9.3/darwin/go1.4.1"
-    })
+    response =
+      Jason.encode!(%{
+        "id" => 67,
+        "jsonrpc" => "2.0",
+        "result" => "Mist/v0.9.3/darwin/go1.4.1"
+      })
 
     send_resp(conn, 200, response)
   end

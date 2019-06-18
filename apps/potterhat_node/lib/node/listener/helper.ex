@@ -24,13 +24,14 @@ defmodule PotterhatNode.Listener.Helper do
   def broadcast_linked(message) do
     {:links, links} = Process.info(self(), :links)
 
-    _ = Enum.each(links, fn
-      link when is_pid(link) ->
-        :ok = GenServer.cast(link, message)
+    _ =
+      Enum.each(links, fn
+        link when is_pid(link) ->
+          :ok = GenServer.cast(link, message)
 
-      _ ->
-        :skip
-    end)
+        _ ->
+          :skip
+      end)
 
     :ok
   end
