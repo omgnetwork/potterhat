@@ -34,8 +34,10 @@ jobs:
     executor: builder
     steps:
       - checkout
-      - run: sh .circleci/ci_build.sh
-      - run: sh .circleci/ci_publish.sh
+      - run: |
+          mkdir -p ~/var
+          elixir --version | tee ~/var/elixir-version
+      - run: make build-test
       - persist_to_workspace:
           name: Persist workspace
           root: ~/
