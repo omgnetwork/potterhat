@@ -89,7 +89,7 @@ docker-prod:
 
 docker-build:
 	docker build \
-		--build-arg release_version=$$(awk '/version:/ { gsub(/[^0-9a-z\.\-]+/, "", $$2); print $$2 }' $(PWD)/apps/ewallet/mix.exs) \
+		--build-arg release_version=$$(awk '/version:/ { gsub(/[^0-9a-z\.\-]+/, "", $$2); print $$2 }' $(PWD)/apps/potterhat_node/mix.exs) \
 		--cache-from $(IMAGE_NAME) \
 		-t $(IMAGE_NAME) \
 		.
