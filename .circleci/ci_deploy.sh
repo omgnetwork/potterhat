@@ -1,42 +1,43 @@
-#!/bin/sh -e
-#
-# Authenticates with Kubernetes cluster and patch the deployment.
-#
+#!/bin/sh
 
-if ! command -v gcloud >/dev/null; then
-    printf >&2 "Google Cloud SDK has not been installed.\\n"
-    exit 1
-fi
+set -e
 
-if ! command -v git >/dev/null; then
-    printf >&2 "Git has not been installed.\\n"
-    exit 1
-fi
+echo_info() {
+    printf "\\033[0;34m%s\\033[0;0m\\n" "$1"
+}
 
-if ! command -v kubectl >/dev/null; then
-    printf >&2 "Kubectl has not been installed.\\n"
-    exit 1
-fi
+echo_warn() {
+    printf "\\033[0;33m%s\\033[0;0m\\n" "$1"
+}
 
 
-## Figure out latest image and tag
+## Sanity check
 ##
 
-if [ -z "$IMAGE_NAME" ]; then
-    printf >&2 "IMAGE_NAME has not been set.\\n"
-    exit 1
+if [ -z "$CIRCLE_GPG_KEY" ] ||
+       [ -z "$CIRCLE_GPG_OWNERTRUST" ] ||
+       [ -z "$GCP_KEY_FILE" ] ||
+       [ -z "$GCP_ACCOUNT_ID" ] ||
+       [ -z "$GCP_REGION" ] ||
+       [ -z "$GCP_ZONE" ] ||
+       [ -z "$GCP_CLUSTER_ID" ]; then
+    echo_warn "Deploy credentials not present, skipping deploy."
+    exit 0
 fi
 
-IMAGE_TAG=$(git rev-parse --short HEAD)
 
-
-## Authenticate with Google Cloud SDK
+## GPG
 ##
 
-if [ -z "$GCP_KEY_FILE" ] || [ -z "$GCP_ACCOUNT_ID" ]; then
-    printf >&2 "Deploy credentials not present.\\n"
-    exit 1
-fi
+GPGFILE=$(mktemp)
+trap 'rm -f $GPGFILE' 0 1 2 3 6 14 15
+echo "$CIRCLE_GPG_KEY" | base64 -d | gunzip > "$GPGFILE"
+gpg --import "$GPGFILE"
+printf "%s\\n" "$CIRCLE_GPG_OWNERTRUST" | gpg --import-ownertrust
+
+
+## GCP
+##
 
 GCPFILE=$(mktemp)
 trap 'rm -f $GCPFILE' 0 1 2 3 6 14 15
@@ -44,38 +45,57 @@ echo "$GCP_KEY_FILE" | base64 -d > "$GCPFILE"
 
 gcloud auth activate-service-account --key-file="$GCPFILE"
 gcloud config set project "$GCP_ACCOUNT_ID"
-
-if [ -z "$GCP_REGION" ] || [ -z "$GCP_ZONE" ] || [ -z "$GCP_CLUSTER_ID" ]; then
-    printf >&2 "Cluster credentials not present.\\n"
-    exit 1
-fi
-
 gcloud config set compute/region "$GCP_REGION"
 gcloud config set compute/zone "$GCP_ZONE"
 gcloud container clusters get-credentials --region="$GCP_REGION" "$GCP_CLUSTER_ID"
 
 
-## Deploy target
+## Cloning
 ##
 
-if [ -z "$DEPLOY_NS" ] || [ -z "$DEPLOY_NAME" ] || [ -z "$DEPLOY_CONTAINER" ]; then
-    printf >&2 "Deploy target not present.\\n"
-    exit 1
-fi
+mkdir -p ~/.ssh
+ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-cat <<EOF | kubectl patch --namespace="$DEPLOY_NS" deploy "$DEPLOY_NAME" -p "$(cat -)"
-{
-  "spec": {
-    "template": {
-      "spec": {
-        "containers": [
-          {
-            "name": "$DEPLOY_CONTAINER",
-            "image": "$IMAGE_NAME:$IMAGE_TAG"
-          }
-        ]
-      }
-    }
-  }
-}
+git init ~/deploy
+cd ~/deploy || exit 1
+git remote add origin "git@github.com:omisego/deploy.git"
+git config core.sparsecheckout true
+
+cat <<EOF >> ~/deploy/.git/info/sparse-checkout
+.gitmodules
+kapitan/components/*
+kapitan/inventory/classes/*
+kapitan/inventory/targets/omisego-dev-potterhat.yml
+kapitan/secrets/default/*
+kapitan/share/*
+vendor/github.com/omisego/*
+vendor/github.com/ksonnet/*
 EOF
+
+git pull --depth 1 origin master
+git submodule update --init vendor/github.com/omisego/charts
+git submodule update --init vendor/github.com/ksonnet/ksonnet-lib
+git submodule update --init vendor/github.com/deepmind/kapitan
+
+
+## Compile Kapitan
+##
+
+cd ~/deploy/kapitan || exit 1
+
+TARGET="inventory/targets/omisego-dev-potterhat.yml"
+NEW_TAG="$(printf "%s" "$CIRCLE_SHA1" | head -c 8)" awk '
+  m = match($0, "^([\ ]+tag:[\ ]+)") {
+  print substr($0, RSTART, RLENGTH-1) " \"" ENVIRON["NEW_TAG"] "\""
+} ! m { print }' < "$TARGET" > "$TARGET.tmp"
+mv "$TARGET.tmp" "$TARGET"
+
+kapitan compile -J ./ \
+  ../vendor/github.com/ksonnet/ksonnet-lib \
+  ../vendor/github.com/deepmind/kapitan/kapitan/lib
+
+
+## Deploy!
+##
+
+sh compiled/omisego-dev-potterhat/potterhat/apply.sh
