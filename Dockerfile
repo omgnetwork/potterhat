@@ -26,11 +26,7 @@ RUN set -xe \
 ##
 
 RUN apk add --update --no-cache --virtual .potterhat-runtime \
-        bash \
-        imagemagick \
-        libressl \
-        libressl-dev \
-        lksctp-tools
+        bash
 
 COPY rootfs /
 
