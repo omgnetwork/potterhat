@@ -5,7 +5,8 @@ defmodule Potterhat.MixProject do
     [
       apps_path: "apps",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer()
     ]
   end
 
@@ -16,7 +17,20 @@ defmodule Potterhat.MixProject do
   # Run "mix help deps" for examples and options.
   defp deps do
     [
-      {:distillery, "~> 2.0"}
+      {:credo, "~> 1.0.0", only: [:dev, :test], runtime: false},
+      {:distillery, "~> 2.0"},
+      {:dialyxir, "~> 1.0.0-rc.4", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.8", only: :test, runtime: false}
+    ]
+  end
+
+  defp dialyzer do
+    [
+      flags: [:error_handling, :race_conditions, :underspecs, :unknown, :unmatched_returns],
+      ignore_warnings: "dialyzer.ignore-warnings",
+      list_unused_filters: true,
+      plt_add_apps: [:iex, :mix, :distillery]
     ]
   end
 end
