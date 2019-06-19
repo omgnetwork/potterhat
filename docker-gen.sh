@@ -22,7 +22,7 @@ print_usage() {
     printf "\\n"
 }
 
-ARGS=$(getopt hdi:n:f: "$@" 2>/dev/null)
+ARGS=$(getopt hdi:n:c:r:w:f: "$@" 2>/dev/null)
 
 # shellcheck disable=SC2181
 if [ $? != 0 ]; then
@@ -40,6 +40,9 @@ while true; do
     case "$1" in
         -i ) IMAGE_NAME=$2;              shift;shift;;
         -n ) EXTERNAL_NETWORK=$2;        shift;shift;;
+        -c ) NODE_CLIENT=$2;             shift;shift;;
+        -r ) NODE_RPC_URI=$2;            shift;shift;;
+        -w ) NODE_WS_URI=$2;             shift;shift;;
         -f ) ENV_FILE=$2;                shift;shift;;
         -d ) DEV_MODE=1;                 shift;;
         -h ) print_usage;                exit 2;;
@@ -47,6 +50,10 @@ while true; do
         *  ) break;;
     esac
 done
+
+[ -z "$NODE_CLIENT" ]  && NODE_CLIENT="geth"
+[ -z "$NODE_RPC_URI" ] && NODE_RPC_URI="http://your_rpc_uri:8545"
+[ -z "$NODE_WS_URI" ]  && NODE_WS_URI="ws://your_websocket_uri:8546"
 
 if [ -z "$IMAGE_NAME" ]; then
    if [ $DEV_MODE = 1 ]; then
@@ -60,11 +67,11 @@ YML_SERVICES="
   potterhat:
     image: $IMAGE_NAME
     environment:
-      POTTERHAT_NODE_1_ID: \"your_node_id\"
-      POTTERHAT_NODE_1_LABEL: \"Your Node Label\"
-      POTTERHAT_NODE_1_CLIENT: \"geth\"
-      POTTERHAT_NODE_1_RPC: \"http://your_rpc_uri:8545\"
-      POTTERHAT_NODE_1_WS: \"ws://your_websocket_uri:8546\"
+      POTTERHAT_NODE_1_ID: \"default_node\"
+      POTTERHAT_NODE_1_LABEL: \"Default Node\"
+      POTTERHAT_NODE_1_CLIENT: \"$NODE_CLIENT\"
+      POTTERHAT_NODE_1_RPC: \"$NODE_RPC_URI\"
+      POTTERHAT_NODE_1_WS: \"$NODE_WS_URI\"
       POTTERHAT_NODE_1_PRIORITY: 10\
 " # EOF
 
