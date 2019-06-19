@@ -9,6 +9,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 WORKDIR=$(mktemp -d)
 trap 'rm -rf $WORKDIR' 0 1 2 3 6 14 15
 
+NEWLINE="
+"
+
 ## Utils
 ##
 
@@ -92,7 +95,7 @@ while getopts "c:mt:f:" opt; do
         c ) _color=$OPTARG;;
         m ) _markdown=1;;
         t ) _fallback=$OPTARG;;
-        f ) _fields="$_fields$OPTARG\\n";;
+        f ) _fields="$_fields$OPTARG$NEWLINE";;
         * ) print_usage; exit 1;;
     esac
 done
@@ -155,7 +158,7 @@ if [ -n "$_fields" ]; then
     tmp_data=
     last_idx=
 
-    echo "${_fields%%\\n}" | sort -n > "$WORKDIR/_fields_tmp"
+    echo "${_fields%%$NEWLINE}" | sort -n > "$WORKDIR/_fields_tmp"
 
     while read -r field; do
         idx=${field%%:*}
