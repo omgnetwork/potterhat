@@ -95,7 +95,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
   defp set_envs(config, index) do
     :ok = System.put_env("POTTERHAT_NODE_#{index}_ID", Map.fetch!(config, :id))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_LABEL", Map.fetch!(config, :label))
-    :ok = System.put_env("POTTERHAT_NODE_#{index}_CLIENT", Map.fetch!(config, :client))
+    :ok = System.put_env("POTTERHAT_NODE_#{index}_CLIENT_TYPE", Map.fetch!(config, :client_type))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_RPC", Map.fetch!(config, :rpc))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_WS", Map.fetch!(config, :ws))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_PRIORITY", Map.fetch!(config, :priority))

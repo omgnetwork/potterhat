@@ -40,7 +40,7 @@ while true; do
     case "$1" in
         -i ) IMAGE_NAME=$2;              shift;shift;;
         -n ) EXTERNAL_NETWORK=$2;        shift;shift;;
-        -c ) NODE_CLIENT=$2;             shift;shift;;
+        -c ) NODE_CLIENT_TYPE=$2;        shift;shift;;
         -r ) NODE_RPC_URI=$2;            shift;shift;;
         -w ) NODE_WS_URI=$2;             shift;shift;;
         -f ) ENV_FILE=$2;                shift;shift;;
@@ -51,9 +51,9 @@ while true; do
     esac
 done
 
-[ -z "$NODE_CLIENT" ]  && NODE_CLIENT="geth"
-[ -z "$NODE_RPC_URI" ] && NODE_RPC_URI="http://your_rpc_uri:8545"
-[ -z "$NODE_WS_URI" ]  && NODE_WS_URI="ws://your_websocket_uri:8546"
+[ -z "$NODE_CLIENT_TYPE" ] && NODE_CLIENT_TYPE="geth"
+[ -z "$NODE_RPC_URI" ]     && NODE_RPC_URI="http://your_rpc_uri:8545"
+[ -z "$NODE_WS_URI" ]      && NODE_WS_URI="ws://your_websocket_uri:8546"
 
 if [ -z "$IMAGE_NAME" ]; then
    if [ $DEV_MODE = 1 ]; then
@@ -69,7 +69,7 @@ YML_SERVICES="
     environment:
       POTTERHAT_NODE_1_ID: \"default_node\"
       POTTERHAT_NODE_1_LABEL: \"Default Node\"
-      POTTERHAT_NODE_1_CLIENT: \"$NODE_CLIENT\"
+      POTTERHAT_NODE_1_CLIENT_TYPE: \"$NODE_CLIENT_TYPE\"
       POTTERHAT_NODE_1_RPC: \"$NODE_RPC_URI\"
       POTTERHAT_NODE_1_WS: \"$NODE_WS_URI\"
       POTTERHAT_NODE_1_PRIORITY: 10\
