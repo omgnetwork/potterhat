@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM ubuntu:18.04
 
 LABEL maintainer="OmiseGO Team <omg@omise.co>"
 LABEL description="Official image for OmiseGO Potterhat"
@@ -11,22 +11,26 @@ ENV LANG=C.UTF-8
 ENV S6_VERSION="1.21.4.0"
 
 RUN set -xe \
- && apk add --update --no-cache --virtual .fetch-deps \
-        curl \
-        ca-certificates \
+ && apt-get update \
+ && apt-get install -y \
+                    curl \
+                    ca-certificates \
  && S6_DOWNLOAD_URL="https://github.com/just-containers/s6-overlay/releases/download/v${S6_VERSION}/s6-overlay-amd64.tar.gz" \
  && S6_DOWNLOAD_SHA256="e903f138dea67e75afc0f61e79eba529212b311dc83accc1e18a449d58a2b10c" \
  && curl -fsL -o s6-overlay.tar.gz "${S6_DOWNLOAD_URL}" \
  && echo "${S6_DOWNLOAD_SHA256}  s6-overlay.tar.gz" |sha256sum -c - \
  && tar -xzC / -f s6-overlay.tar.gz \
  && rm s6-overlay.tar.gz \
- && apk del .fetch-deps
+ && rm -rf /var/lib/apt/lists/*
 
 ## Application
 ##
 
-RUN apk add --update --no-cache --virtual .potterhat-runtime \
-        bash
+RUN set -xe \
+ && apt-get update \
+ && apt-get install -y \
+                    bash \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
 
@@ -38,8 +42,14 @@ ARG uid=10000
 ARG gid=10000
 
 RUN set -xe \
- && addgroup -g ${gid} ${group} \
- && adduser -D -h /app -u ${uid} -G ${group} ${user} \
+ && groupadd --gid "${gid}" "${group}" \
+ && useradd \
+      --uid ${uid} \
+      --gid ${gid} \
+      --home /app \
+      --create-home \
+      --shell /bin/bash \
+      ${user} \
  && chown "${uid}:${gid}" "/app" \
  && chmod +x /entrypoint
 
