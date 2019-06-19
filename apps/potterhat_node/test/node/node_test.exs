@@ -23,7 +23,7 @@ defmodule PotterhatNodeTest do
   @node_config %PotterhatNode.NodeConfig{
     id: :test_node_start_link,
     label: "Test PotterhatNode.start_link/1 GenServer",
-    client: :geth,
+    client_type: :geth,
     rpc: "http://localhost",
     ws: "ws://localhost",
     priority: 1000
