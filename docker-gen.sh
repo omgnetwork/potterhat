@@ -89,8 +89,7 @@ if [ $DEV_MODE = 1 ]; then
       - .:/app
       - potterhat-deps:/app/deps
       - potterhat-builds:/app/_build
-    working_dir: /app
-    entrypoint: tail -f /dev/null\
+    working_dir: /app\
 " # EOF
 
     YML_VOLUMES="
