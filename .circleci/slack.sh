@@ -199,9 +199,6 @@ $(_colonize "$_payload_i")\
 ## Finalize
 ##
 
-printf "Sending to Slack:\n"
-printf "{\"attachments\":[{${_payload_i}}]}"
-
 exec curl -X POST \
      -H 'Content-Type: application/json' \
      --data "{\"attachments\":[{${_payload_i}}]}" \

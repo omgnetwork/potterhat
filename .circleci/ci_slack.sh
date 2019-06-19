@@ -63,11 +63,6 @@ cmd_failure() {
     message_f=
     fieldargs=
 
-    printf "repo:\"%s\"" "$repo"
-    printf "CIRCLE_BRANCH:\"%s\"" "${CIRCLE_BRANCH}"
-    printf "CIRCLE_JOB:\"%s\"" "${CIRCLE_JOB}"
-    printf "CIRCLE_BUILD_NUM:\"%s\"" "${CIRCLE_BUILD_NUM}"
-
     if [ -n "$CIRCLE_TAG" ]; then
         message_f="$repo tag ${CIRCLE_TAG} has failed during ${CIRCLE_JOB}"
         message=":no_good: *$repo* tag *${CIRCLE_TAG}* has failed during ${CIRCLE_JOB}"
