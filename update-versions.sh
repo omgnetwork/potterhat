@@ -4,7 +4,7 @@ BASE_DIR=$(cd "$(dirname "$0")" || exit; pwd -P)
 FILE_LIST="/tmp/update_version_files"
 
 print_usage() {
-    printf 2>&1 "\
+    printf >&2 "\
 Usage: %s [-a] NEW_VERSION
 
 Update version string in mix.exs and config.exs with NEW_VERSION
@@ -36,7 +36,7 @@ VERSION=$1
 
 if [ "$AUTO" = 1 ]; then
     if ! command -v git >/dev/null; then
-        printf 2>&1 "Git is required to auto-generating version\\n"
+        printf >&2 "Git is required to auto-generating version\\n"
         exit 1
     fi
 
@@ -47,12 +47,12 @@ if [ "$AUTO" = 1 ]; then
 
     if [ -z "$VERSION" ]; then
         VERSION="v0.0.0"
-        printf 2>&1 "Could not define a version from git tags. Defaulting to v0.0.0.\\n"
+        printf >&2 "Could not define a version from git tags. Defaulting to v0.0.0.\\n"
     fi
 
     VERSION=${VERSION#v*}
 
-    printf 2>&1 "Using %s as the current version.\\n" "$VERSION"
+    printf >&2 "Using %s as the current version.\\n" "$VERSION"
 elif [ -z "$VERSION" ]; then
     print_usage
     exit 2
@@ -66,14 +66,14 @@ find "$BASE_DIR/apps" \
      \( -iname "mix.exs" -or -iname "config.exs" \) \
 > "$FILE_LIST"
 
-printf 2>&1 "Updating versions...\\n"
+printf >&2 "Updating versions...\\n"
 
 while IFS= read -r file; do
     if ! grep -E -q "^[\ ]+version:" "$file"; then
         continue
     fi
 
-    printf 2>&1 "* %-40s" "${file#$BASE_DIR/*}..."
+    printf >&2 "* %-40s" "${file#$BASE_DIR/*}..."
     NEW_VERSION=$VERSION awk '
         m = match($0, "^([ ]+version:[ ]+)") {
           print substr($0, RSTART, RLENGTH-1) " \"" ENVIRON["NEW_VERSION"] "\","
@@ -81,5 +81,5 @@ while IFS= read -r file; do
     ' < "$file" > "$file.tmp"
 
     mv "$file.tmp" "$file"
-    printf 2>&1 " OK\\n"
+    printf >&2 " OK\\n"
 done < "$FILE_LIST"
