@@ -80,17 +80,15 @@ if [ $DEV_MODE = 1 ]; then
     user: root
     volumes:
       - .:/app
-      - ewallet-deps:/app/deps
-      - ewallet-builds:/app/_build
-      - ewallet-node:/app/apps/frontend/assets/node_modules
+      - potterhat-deps:/app/deps
+      - potterhat-builds:/app/_build
     working_dir: /app
     entrypoint: tail -f /dev/null\
 " # EOF
 
     YML_VOLUMES="
-  ewallet-deps:
-  ewallet-builds:
-  ewallet-node:\
+  potterhat-deps:
+  potterhat-builds:\
 " # EOF
 fi
 
