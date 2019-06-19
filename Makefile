@@ -52,8 +52,6 @@ check-dialyzer:
 # Building
 #
 
-# If we call mix phx.digest without mix compile, mix release will silently fail
-# for some reason. Always make sure to run mix compile first.
 build-prod: deps
 	$(ENV_PROD) mix do compile, release
 
