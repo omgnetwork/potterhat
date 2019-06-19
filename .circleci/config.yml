@@ -6,7 +6,7 @@ executors:
     machine:
       image: ubuntu-1604:201903-01
     environment:
-      IMAGE_NAME: "gcr.io/omise-go/potterhat"
+      IMAGE_NAME: "omisego/potterhat"
 
   builder:
     docker:
@@ -17,8 +17,6 @@ executors:
     docker:
       - image: omisegoimages/ewallet-deploy:stable
     working_directory: ~/src
-    environment:
-      IMAGE_NAME: "gcr.io/omise-go/potterhat"
 
 
 commands:
