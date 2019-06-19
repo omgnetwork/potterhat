@@ -21,7 +21,7 @@ err() {
 }
 
 _escape() {
-    printf "%s" "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g'
+    printf "%s" "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | tr -d "\n"
 }
 
 _colonize() {
