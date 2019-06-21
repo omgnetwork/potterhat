@@ -55,9 +55,9 @@ jobs:
       - setup_workspace
       - run: make check-format
       - run: make check-credo
-      # - run:
-      #     command: sh .circleci/ci_slack.sh failure
-      #     when: on_fail
+      - run:
+          command: [ "$CIRCLE_BRANCH" = "master" ] && sh .circleci/ci_slack.sh failure
+          when: on_fail
 
   dialyze:
     executor: builder
