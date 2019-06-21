@@ -1,3 +1,17 @@
+# Copyright 2019 OmiseGO Pte Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 defmodule PotterhatRPC.Router do
   @moduledoc """
   Serves RPC requests.
@@ -6,6 +20,7 @@ defmodule PotterhatRPC.Router do
   require Logger
   alias PotterhatNode.Node
   alias PotterhatNode.ActiveNodes
+  alias PotterhatRPC.ErrorResponse
 
   plug(Plug.Logger)
   plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
@@ -19,13 +34,17 @@ defmodule PotterhatRPC.Router do
 
   # Forward all POST requests to the node and relay the response back to the requester.
   post "/" do
-    response = node_request(conn.body_params, conn.req_headers)
+    case node_request(conn.body_params, conn.req_headers) do
+      {:ok, response} ->
+        # `resp_headers` is reset to `[]` ensure only node's headers are returned.
+        conn
+        |> Map.put(:resp_headers, [])
+        |> merge_resp_headers(response.headers)
+        |> send_resp(response.status_code, response.body)
 
-    # `resp_headers` is reset to `[]` ensure only node's headers are returned.
-    conn
-    |> Map.put(:resp_headers, [])
-    |> merge_resp_headers(response.headers)
-    |> send_resp(response.status_code, response.body)
+      {:error, error} ->
+        ErrorResponse.send_resp(conn, error)
+    end
   end
 
   match _ do
@@ -43,7 +62,7 @@ defmodule PotterhatRPC.Router do
       {:ok, response} ->
         label = Node.get_label(node_id)
         Logger.debug("Serving the RPC request from #{label}.")
-        response
+        {:ok, response}
 
       {:error, error} ->
         ActiveNodes.deregister(node_id)

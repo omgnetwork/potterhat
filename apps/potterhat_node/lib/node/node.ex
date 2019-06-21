@@ -169,16 +169,23 @@ defmodule PotterhatNode.Node do
         _ -> false
       end)
 
-    raw = HTTPoison.post!(state[:rpc], encoded_params, header_params)
+    response =
+      case HTTPoison.post(state[:rpc], encoded_params, header_params) do
+        {:ok, raw} ->
+          # This encapsulates 3rd party struct into our own.
+          response = %RPCResponse{
+            status_code: raw.status_code,
+            headers: raw.headers,
+            body: raw.body
+          }
 
-    # This encapsulates 3rd party struct into our own.
-    response = %RPCResponse{
-      status_code: raw.status_code,
-      headers: raw.headers,
-      body: raw.body
-    }
+          {:ok, response}
 
-    {:reply, {:ok, response}, state}
+        {:error, _} = error ->
+          error
+      end
+
+    {:reply, response, state}
   end
 
   @impl true
