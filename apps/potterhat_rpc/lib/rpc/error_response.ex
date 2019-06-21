@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatRPC.ErrorResponse do
+  @moduledoc """
+  Prepares an RPC error response.
+  """
   alias Plug.Conn
 
   def send_resp(conn, :no_nodes_available) do
@@ -20,7 +23,7 @@ defmodule PotterhatRPC.ErrorResponse do
     # This error response means that the server, while working as a gateway
     # to get a response needed to handle the request, got an invalid response.
     # Ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-    do_send_resp(conn, -32099, "No backend nodes available.")
+    do_send_resp(conn, -32_099, "No backend nodes available.")
   end
 
   defp do_send_resp(conn, code, message) do

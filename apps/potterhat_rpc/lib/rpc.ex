@@ -13,4 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatRPC do
+  @moduledoc """
+  The sub-application that handles the relay of RPC request and responses.
+  """
 end

@@ -18,8 +18,7 @@ defmodule PotterhatRPC.Router do
   """
   use Plug.Router
   require Logger
-  alias PotterhatNode.Node
-  alias PotterhatNode.ActiveNodes
+  alias PotterhatNode.{ActiveNodes, Node}
   alias PotterhatRPC.ErrorResponse
 
   plug(Plug.Logger)
