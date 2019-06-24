@@ -19,7 +19,7 @@ defmodule PotterhatRPC.Router do
   use Plug.Router
   require Logger
   alias PotterhatNode.{ActiveNodes, Node}
-  alias PotterhatRPC.ErrorResponse
+  alias PotterhatRPC.ErrorHandler
 
   plug(Plug.Logger)
   plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
@@ -42,7 +42,7 @@ defmodule PotterhatRPC.Router do
         |> send_resp(response.status_code, response.body)
 
       {:error, error} ->
-        ErrorResponse.send_resp(conn, error)
+        ErrorHandlers.send_resp(conn, error)
     end
   end
 

@@ -12,24 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatRPC.ErrorResponse do
+defmodule PotterhatRPC.ErrorHandler do
   @moduledoc """
   Prepares an RPC error response.
   """
   alias Plug.Conn
 
-  def send_resp(conn, :no_nodes_available) do
-    # 502 Bad Gateway
-    # This error response means that the server, while working as a gateway
-    # to get a response needed to handle the request, got an invalid response.
-    # Ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-    do_send_resp(conn, -32_099, "No backend nodes available.")
-  end
+  @errors %{
+    no_nodes_available: %{
+      code: -32_099,
+      message: "No backend nodes available."
+    }
+  }
 
-  defp do_send_resp(conn, code, message) do
+  def send_resp(conn, code) do
+    error = Map.fetch!(@errors, code)
+
     payload =
-      code
-      |> render(message)
+      error.code
+      |> render(error.message)
       |> Jason.encode!()
 
     # Per JSON-RPC specs, errors always return with HTTP status 500
@@ -37,15 +38,15 @@ defmodule PotterhatRPC.ErrorResponse do
     Conn.send_resp(conn, 500, payload)
   end
 
-  # For error code, see: https://github.com/ethereum/wiki/wiki/JSON-RPC-Error-Codes-Improvement-Proposal
+  # For error response format, see: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md
   defp render(code, message) do
     %{
+      "id" => 1,
       "jsonrpc" => "2.0",
       "error" => %{
         "code" => code,
         "message" => message
-      },
-      "id" => 1
+      }
     }
   end
 end
