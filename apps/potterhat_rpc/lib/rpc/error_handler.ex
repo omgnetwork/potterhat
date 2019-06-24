@@ -25,12 +25,12 @@ defmodule PotterhatRPC.ErrorHandler do
     }
   }
 
-  def send_resp(conn, code) do
+  def send_resp(conn, code, request_id) do
     error = Map.fetch!(@errors, code)
 
     payload =
       error.code
-      |> render(error.message)
+      |> render(error.message, request_id)
       |> Jason.encode!()
 
     # Per JSON-RPC specs, errors always return with HTTP status 500
@@ -39,9 +39,9 @@ defmodule PotterhatRPC.ErrorHandler do
   end
 
   # For error response format, see: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md
-  defp render(code, message) do
+  defp render(code, message, request_id) do
     %{
-      "id" => 1,
+      "id" => request_id,
       "jsonrpc" => "2.0",
       "error" => %{
         "code" => code,

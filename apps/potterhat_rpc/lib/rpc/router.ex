@@ -41,8 +41,8 @@ defmodule PotterhatRPC.Router do
         |> merge_resp_headers(response.headers)
         |> send_resp(response.status_code, response.body)
 
-      {:error, error} ->
-        ErrorHandlers.send_resp(conn, error)
+      {:error, code} ->
+        ErrorHandlers.send_resp(conn, code, conn.body_params.id)
     end
   end
 
