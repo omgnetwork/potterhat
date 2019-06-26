@@ -17,6 +17,7 @@ defmodule PotterhatRPC.Router do
   Serves RPC requests.
   """
   use Plug.Router
+  alias PotterhatNode.ActiveNodes
   alias PotterhatRPC.EthForwarder
 
   plug(Plug.Logger)
@@ -27,7 +28,11 @@ defmodule PotterhatRPC.Router do
   get "/" do
     send_resp(conn, 200, Jason.encode!(%{
       status: true,
-      potterhat_version: Application.get_env(:potterhat_rpc, :version)
+      potterhat_version: Application.get_env(:potterhat_rpc, :version),
+      nodes: %{
+        total: length(PotterhatNode.get_node_configs()),
+        active: length(ActiveNodes.all())
+      }
     }))
   end
 

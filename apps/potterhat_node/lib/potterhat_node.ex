@@ -17,4 +17,12 @@ defmodule PotterhatNode do
   The Potterhat's sub-application responsible for listening to events,
   and exchange data to/from Ethereum nodes.
   """
+
+  @doc """
+  Retrieve the list of all node configurations.
+  """
+  @spec get_node_configs() :: [%PotterhatNode.NodeConfig{}]
+  def get_node_configs do
+    Application.get_env(:potterhat_node, :nodes)
+  end
 end
