@@ -14,6 +14,7 @@
 
 defmodule PotterhatRPC.EthForwarderTest do
   use PotterhatRPC.ConnCase, async: true
+  import ExUnit.CaptureLog
   import PotterhatNode.EthereumTestHelper
   alias PotterhatNode.{ActiveNodes, Node}
   alias PotterhatRPC.EthForwarder
@@ -23,21 +24,27 @@ defmodule PotterhatRPC.EthForwarderTest do
   #
 
   setup do
-    # {:ok, registry_pid} = prepare_node_registry()
+    {:ok, node_registry} = prepare_node_registry()
 
-    # {:ok, pid_1, config_1} = prepare_mock_node(node_registry: registry_pid, priority: 10)
-    # {:ok, pid_2, config_2} = prepare_mock_node(node_registry: registry_pid, priority: 20)
-
-    {:ok, _} = prepare_mock_node(priority: 10)
-    {:ok, _} = prepare_mock_node(priority: 20)
+    {:ok, pid_1} = prepare_mock_node(node_registry: node_registry, priority: 10)
+    {:ok, pid_2} = prepare_mock_node(node_registry: node_registry, priority: 20)
 
     # The nodes take some time to intialize, so we wait for 100ms.
-    _ = Process.sleep(100)
+    _ = Process.sleep(200)
 
-    :ok
+    {:ok, %{
+      nodes: [pid_1, pid_2],
+      node_registry: node_registry
+    }}
+  end
+
+  defp prepare_node_registry do
+    name = String.to_atom("node_registry_#{:rand.uniform(999)}")
+    ActiveNodes.start_link(name: name)
   end
 
   defp prepare_mock_node(opts) do
+    node_registry = Keyword.get(opts, :node_registry, ActiveNodes)
     {:ok, rpc_url, websocket_url} = start_mock_node()
 
     config =
@@ -48,12 +55,9 @@ defmodule PotterhatRPC.EthForwarderTest do
         rpc: rpc_url,
         ws: websocket_url,
         priority: Keyword.get(opts, :priority, 100),
-        node_registry: ActiveNodes
-        # node_registry: Keyword.get(opts, :node_registry, ActiveNodes)
+        node_registry: node_registry
       }
 
-    # {:ok, pid} = Node.start_link(config)
-    # {:ok, pid, config}
     Node.start_link(config)
   end
 
@@ -61,34 +65,77 @@ defmodule PotterhatRPC.EthForwarderTest do
   # Actual tests
   #
 
-  describe "sanity test the mock ethereum node" do
-    test "has at least one active nodes" do
-      assert length(ActiveNodes.all()) >= 1
+  describe "sanity check the mock ethereum node" do
+    test "has two active nodes", meta do
+      assert length(ActiveNodes.all(meta.node_registry)) == 2
     end
   end
 
-  describe "POST /" do
-    test "returns response from the active node" do
-      req_id = 1234
+  describe "forward/3" do
+    test "returns a node's response", meta do
+      header_params = %{"content-type" => "application/json"}
 
       body_params = %{
         "jsonrpc" => "2.0",
         "method" => "web3_clientVersion",
         "params" => [],
-        "id" => req_id
+        "id" => :rand.uniform(999)
       }
 
-      response =
-        EthForwarder
-        |> call(:post, "/", body_params)
-        |> json_response()
+      opts = [node_registry: meta.node_registry]
+      {:ok, response} = EthForwarder.forward(body_params, header_params, opts)
+      response = Jason.decode!(response.body)
 
       # The response should be from PotterhatNode.MockEthereumNode.RPC
       assert response["result"] == "PotterhatMockEthereumNode"
     end
 
-    test "returns response from the next active node when the first is not available"
+    test "deregisters and falls back to the next active node when the first one fails", meta do
+      assert length(ActiveNodes.all(meta.node_registry)) == 2
+      header_params = %{"content-type" => "application/json"}
 
-    test "returns :no_nodes_available error when no active nodes are available"
+      body_params = %{
+        "jsonrpc" => "2.0",
+        "method" => "web3_clientVersion",
+        "params" => [],
+        "id" => :rand.uniform(999)
+      }
+
+      opts = [node_registry: meta.node_registry]
+      true = Process.exit(List.first(meta.nodes), :normal)
+
+      log = capture_log(fn ->
+        {:ok, response} = EthForwarder.forward(body_params, header_params, opts)
+        response = Jason.decode!(response.body)
+
+        # The response should be from PotterhatNode.MockEthereumNode.RPC
+        assert response["result"] == "PotterhatMockEthereumNode"
+      end)
+
+      assert log =~ "Failed to serve the RPC request"
+      assert log =~ "Retrying the request with the next available node"
+      assert length(ActiveNodes.all(meta.node_registry)) == 1
+    end
+
+    test "returns :no_nodes_available and logs an error when no active nodes are available" do
+      {:ok, registry} = prepare_node_registry()
+      header_params = %{"content-type" => "application/json"}
+
+      body_params = %{
+        "jsonrpc" => "2.0",
+        "method" => "web3_clientVersion",
+        "params" => [],
+        "id" => :rand.uniform(999)
+      }
+
+      opts = [node_registry: registry]
+
+      log = capture_log(fn ->
+        result = EthForwarder.forward(body_params, header_params, opts)
+        assert {:error, :no_nodes_available} == result
+      end)
+
+      assert log =~ "Failed to serve the RPC request"
+    end
   end
 end

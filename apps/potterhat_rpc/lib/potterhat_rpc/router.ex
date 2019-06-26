@@ -36,5 +36,18 @@ defmodule PotterhatRPC.Router do
     }))
   end
 
-  forward "/", to: EthForwarder
+  # Forward all POST requests to the node and relay the response back to the requester.
+  post "/" do
+    case EthForwarder.forward(conn.body_params, conn.req_headers) do
+      {:ok, response} ->
+        # `resp_headers` is reset to `[]` ensure only node's headers are returned.
+        conn
+        |> Map.put(:resp_headers, [])
+        |> merge_resp_headers(response.headers)
+        |> send_resp(response.status_code, response.body)
+
+      {:error, code} ->
+        ErrorHandler.send_resp(conn, code, conn.body_params["id"])
+    end
+  end
 end

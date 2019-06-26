@@ -19,10 +19,10 @@ defmodule PotterhatRPC.ErrorHandlerTest do
 
   describe "send_resp/3" do
     test "puts the error object into the connection's response body" do
-      conn = conn(:get, "/some_url")
+      conn = conn(:post, "/some_url", %{id: 1234})
       refute conn.resp_body
 
-      error_conn = ErrorHandler.send_resp(conn, :no_nodes_available, 1234)
+      error_conn = ErrorHandler.send_resp(conn, :no_nodes_available)
 
       expected = Jason.encode!(%{
         "jsonrpc" => "2.0",

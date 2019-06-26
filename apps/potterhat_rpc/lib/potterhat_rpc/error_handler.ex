@@ -25,7 +25,8 @@ defmodule PotterhatRPC.ErrorHandler do
     }
   }
 
-  def send_resp(conn, code, request_id) do
+  def send_resp(conn, code) do
+    request_id = Map.fetch!(conn.body_params, "id")
     error = Map.fetch!(@errors, code)
 
     payload =
