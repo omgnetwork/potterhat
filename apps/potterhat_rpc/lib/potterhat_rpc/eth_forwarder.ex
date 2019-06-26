@@ -41,10 +41,6 @@ defmodule PotterhatRPC.EthForwarder do
     end
   end
 
-  defp node_request(_body_params, _header_params, []) do
-    {:error, :no_nodes_available}
-  end
-
   defp node_request(body_params, header_params) do
     node_id = ActiveNodes.first()
 
