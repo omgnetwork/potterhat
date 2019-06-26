@@ -18,7 +18,7 @@ defmodule PotterhatNode.Node do
   """
   use GenServer
   require Logger
-  alias PotterhatNode.EventLogger
+  alias PotterhatNode.{ActiveNodes, EventLogger}
   alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do
@@ -117,7 +117,7 @@ defmodule PotterhatNode.Node do
     _ =
       case state.node_registry do
         nil -> :noop
-        registry -> registry.register(self(), state.priority)
+        registry -> ActiveNodes.register(registry, self(), state.priority)
       end
 
     {:noreply, %{state | state: :started}}
@@ -136,7 +136,7 @@ defmodule PotterhatNode.Node do
     _ =
       case state.node_registry do
         nil -> :noop
-        registry -> registry.deregister(self())
+        registry -> ActiveNodes.deregister(registry, self())
       end
 
     {:noreply, %{state | state: :restarting}, {:continue, :listen}}

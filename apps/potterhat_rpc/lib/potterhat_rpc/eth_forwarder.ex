@@ -37,7 +37,7 @@ defmodule PotterhatRPC.EthForwarder do
         |> send_resp(response.status_code, response.body)
 
       {:error, code} ->
-        ErrorHandler.send_resp(conn, code, conn.body_params.id)
+        ErrorHandler.send_resp(conn, code, conn.body_params["id"])
     end
   end
 

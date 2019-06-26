@@ -18,21 +18,46 @@ defmodule PotterhatNode.MockEthereumNode.RPC do
   """
   use Plug.Router
 
+  plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
+
   plug(:match)
   plug(:dispatch)
 
   post "/" do
     response =
-      Jason.encode!(%{
-        "id" => 67,
-        "jsonrpc" => "2.0",
-        "result" => "Mist/v0.9.3/darwin/go1.4.1"
-      })
+      conn
+      |> generate_response()
+      |> Jason.encode!()
 
     send_resp(conn, 200, response)
   end
 
   match _ do
-    send_resp(conn, 200, "Hello from plug")
+    send_resp(conn, 200, "Invalid request")
+  end
+
+  def generate_response(conn) do
+    conn.body_params
+    |> Map.fetch!("method")
+    |> do_generate_response(conn)
+  end
+
+  defp do_generate_response("web3_clientVersion", conn) do
+    %{
+      "id" => conn.body_params["id"],
+      "jsonrpc" => "2.0",
+      "result" => "PotterhatMockEthereumNode"
+    }
+  end
+
+  defp do_generate_response(_, conn) do
+    %{
+      "id" => conn.body_params["id"],
+      "jsonrpc" => "2.0",
+      "error" => %{
+        "code" => -32601,
+        "message" => "Method not found"
+      }
+    }
   end
 end

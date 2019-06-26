@@ -18,7 +18,7 @@ defmodule PotterhatNode.NodeConfig do
   """
 
   @enforce_keys [:id, :label, :client_type, :rpc, :ws, :priority]
-  defstruct [:id, :label, :client_type, :rpc, :ws, :priority]
+  defstruct [:id, :label, :client_type, :rpc, :ws, :priority, :node_registry]
 
   @doc """
   Builds a NodeConfig struct from the given map of inputs with string keys.
@@ -33,7 +33,8 @@ defmodule PotterhatNode.NodeConfig do
       client_type: Map.fetch!(map, "client_type"),
       rpc: Map.fetch!(map, "rpc"),
       ws: Map.fetch!(map, "ws"),
-      priority: Map.fetch!(map, "priority") |> String.to_integer()
+      priority: Map.fetch!(map, "priority") |> String.to_integer(),
+      node_registry: nil
     }
   end
 end

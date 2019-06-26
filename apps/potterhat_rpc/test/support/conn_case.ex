@@ -25,6 +25,7 @@ defmodule PotterhatRPC.ConnCase do
   def call(router, method, path, params \\ nil) do
     method
     |> conn(path, params)
+    |> put_req_header("content-type", "application/json")
     |> router.call(router.init([]))
   end
 
