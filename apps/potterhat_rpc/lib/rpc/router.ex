@@ -25,7 +25,10 @@ defmodule PotterhatRPC.Router do
   plug(:dispatch)
 
   get "/" do
-    send_resp(conn, 200, Jason.encode!(%{status: true}))
+    send_resp(conn, 200, Jason.encode!(%{
+      status: true,
+      potterhat_version: Application.get_env(:potterhat_rpc, :version)
+    }))
   end
 
   forward "/", to: EthForwarder
