@@ -1,3 +1,6 @@
 # Warnings from :websockex dependency. Un-ignore after we have https://github.com/Azolo/websockex/pull/64/files
 lib/websockex.ex:19: Function handle_cast/2 only terminates with explicit exception
 lib/websockex.ex:297: Expression produces a value of type 'ok' | {'error',_}, but this value is unmatched
+
+# This is due to 3rd-party Plug.Conn.merge_resp_headers/2 potentially raising `AlreadySentError` but was not spec'ed.
+apps/potterhat_rpc/lib/potterhat_rpc/router.ex:44: The created fun has no local return

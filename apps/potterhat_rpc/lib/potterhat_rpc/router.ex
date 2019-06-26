@@ -18,7 +18,7 @@ defmodule PotterhatRPC.Router do
   """
   use Plug.Router
   alias PotterhatNode.ActiveNodes
-  alias PotterhatRPC.EthForwarder
+  alias PotterhatRPC.{ErrorHandler, EthForwarder}
 
   plug(Plug.Logger)
 
@@ -51,7 +51,7 @@ defmodule PotterhatRPC.Router do
         |> send_resp(response.status_code, response.body)
 
       {:error, code} ->
-        ErrorHandler.send_resp(conn, code, conn.body_params["id"])
+        ErrorHandler.send_resp(conn, code)
     end
   end
 end

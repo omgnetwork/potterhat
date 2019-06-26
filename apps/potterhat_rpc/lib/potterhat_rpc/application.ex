@@ -27,7 +27,7 @@ defmodule PotterhatRPC.Application do
         port -> String.to_integer(port)
       end
 
-    Logger.info("Starting RPC server on port #{port}")
+    _ = Logger.info("Starting RPC server on port #{port}")
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: PotterhatRPC.Router, options: [port: port]}

@@ -22,12 +22,22 @@ defmodule PotterhatRPC.ErrorHandler do
     no_nodes_available: %{
       code: -32_099,
       message: "No backend nodes available."
+    },
+    internal_error: %{
+      code: -32_603,
+      message: "Internal JSON-RPC error."
     }
   }
 
+  @spec send_resp(Plug.Conn.t(), atom()) :: Plug.Conn.t()
   def send_resp(conn, code) do
-    request_id = Map.fetch!(conn.body_params, "id")
-    error = Map.fetch!(@errors, code)
+    request_id = Map.get(conn.body_params, "id")
+
+    error =
+      case Map.has_key?(@errors, code) do
+        true -> Map.get(@errors, code)
+        false -> Map.get(@errors, :internal_error)
+      end
 
     payload =
       error.code
