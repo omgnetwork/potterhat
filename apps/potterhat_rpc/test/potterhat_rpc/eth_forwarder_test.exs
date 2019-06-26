@@ -32,10 +32,11 @@ defmodule PotterhatRPC.EthForwarderTest do
     # The nodes take some time to intialize, so we wait for 100ms.
     _ = Process.sleep(200)
 
-    {:ok, %{
-      nodes: [pid_1, pid_2],
-      node_registry: node_registry
-    }}
+    {:ok,
+     %{
+       nodes: [pid_1, pid_2],
+       node_registry: node_registry
+     }}
   end
 
   defp prepare_node_registry do
@@ -47,16 +48,15 @@ defmodule PotterhatRPC.EthForwarderTest do
     node_registry = Keyword.get(opts, :node_registry, ActiveNodes)
     {:ok, rpc_url, websocket_url} = start_mock_node()
 
-    config =
-      %PotterhatNode.NodeConfig{
-        id: String.to_atom("test_eth_forwarder_#{:rand.uniform(999_999_999)}"),
-        label: "A mock node for EthForwarderTest",
-        client_type: :geth,
-        rpc: rpc_url,
-        ws: websocket_url,
-        priority: Keyword.get(opts, :priority, 100),
-        node_registry: node_registry
-      }
+    config = %PotterhatNode.NodeConfig{
+      id: String.to_atom("test_eth_forwarder_#{:rand.uniform(999_999_999)}"),
+      label: "A mock node for EthForwarderTest",
+      client_type: :geth,
+      rpc: rpc_url,
+      ws: websocket_url,
+      priority: Keyword.get(opts, :priority, 100),
+      node_registry: node_registry
+    }
 
     Node.start_link(config)
   end
@@ -104,13 +104,14 @@ defmodule PotterhatRPC.EthForwarderTest do
       opts = [node_registry: meta.node_registry]
       true = Process.exit(List.first(meta.nodes), :normal)
 
-      log = capture_log(fn ->
-        {:ok, response} = EthForwarder.forward(body_params, header_params, opts)
-        response = Jason.decode!(response.body)
+      log =
+        capture_log(fn ->
+          {:ok, response} = EthForwarder.forward(body_params, header_params, opts)
+          response = Jason.decode!(response.body)
 
-        # The response should be from PotterhatNode.MockEthereumNode.RPC
-        assert response["result"] == "PotterhatMockEthereumNode"
-      end)
+          # The response should be from PotterhatNode.MockEthereumNode.RPC
+          assert response["result"] == "PotterhatMockEthereumNode"
+        end)
 
       assert log =~ "Failed to serve the RPC request"
       assert log =~ "Retrying the request with the next available node"
@@ -130,10 +131,11 @@ defmodule PotterhatRPC.EthForwarderTest do
 
       opts = [node_registry: registry]
 
-      log = capture_log(fn ->
-        result = EthForwarder.forward(body_params, header_params, opts)
-        assert {:error, :no_nodes_available} == result
-      end)
+      log =
+        capture_log(fn ->
+          result = EthForwarder.forward(body_params, header_params, opts)
+          assert {:error, :no_nodes_available} == result
+        end)
 
       assert log =~ "Failed to serve the RPC request"
     end

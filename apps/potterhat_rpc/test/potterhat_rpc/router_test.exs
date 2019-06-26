@@ -21,16 +21,15 @@ defmodule PotterhatRPC.RouterTest do
   setup do
     {:ok, rpc_url, websocket_url} = start_mock_node()
 
-    config =
-      %PotterhatNode.NodeConfig{
-        id: String.to_atom("test_eth_forwarder_#{:rand.uniform(999_999_999)}"),
-        label: "A mock node for EthForwarderTest",
-        client_type: :geth,
-        rpc: rpc_url,
-        ws: websocket_url,
-        priority: 10,
-        node_registry: ActiveNodes
-      }
+    config = %PotterhatNode.NodeConfig{
+      id: String.to_atom("test_eth_forwarder_#{:rand.uniform(999_999_999)}"),
+      label: "A mock node for EthForwarderTest",
+      client_type: :geth,
+      rpc: rpc_url,
+      ws: websocket_url,
+      priority: 10,
+      node_registry: ActiveNodes
+    }
 
     {:ok, _pid} = Node.start_link(config)
 
@@ -48,13 +47,13 @@ defmodule PotterhatRPC.RouterTest do
         |> json_response()
 
       assert %{
-        "status" => true,
-        "potterhat_version" => _,
-        "nodes" => %{
-          "total" => _,
-          "active" => _
-        }
-      } = response
+               "status" => true,
+               "potterhat_version" => _,
+               "nodes" => %{
+                 "total" => _,
+                 "active" => _
+               }
+             } = response
     end
   end
 

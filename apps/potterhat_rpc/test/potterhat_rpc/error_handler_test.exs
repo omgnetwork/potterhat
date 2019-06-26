@@ -24,14 +24,15 @@ defmodule PotterhatRPC.ErrorHandlerTest do
 
       error_conn = ErrorHandler.send_resp(conn, :no_nodes_available)
 
-      expected = Jason.encode!(%{
-        "jsonrpc" => "2.0",
-        "id" => 1234,
-        "error" => %{
-          "code" => -32099,
-          "message" => "No backend nodes available."
-        }
-      })
+      expected =
+        Jason.encode!(%{
+          "jsonrpc" => "2.0",
+          "id" => 1234,
+          "error" => %{
+            "code" => -32099,
+            "message" => "No backend nodes available."
+          }
+        })
 
       assert expected == error_conn.resp_body
     end

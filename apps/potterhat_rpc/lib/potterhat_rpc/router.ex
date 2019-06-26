@@ -26,14 +26,18 @@ defmodule PotterhatRPC.Router do
   plug(:dispatch)
 
   get "/" do
-    send_resp(conn, 200, Jason.encode!(%{
-      status: true,
-      potterhat_version: Application.get_env(:potterhat_rpc, :version),
-      nodes: %{
-        total: length(PotterhatNode.get_node_configs()),
-        active: length(ActiveNodes.all())
-      }
-    }))
+    send_resp(
+      conn,
+      200,
+      Jason.encode!(%{
+        status: true,
+        potterhat_version: Application.get_env(:potterhat_rpc, :version),
+        nodes: %{
+          total: length(PotterhatNode.get_node_configs()),
+          active: length(ActiveNodes.all())
+        }
+      })
+    )
   end
 
   # Forward all POST requests to the node and relay the response back to the requester.
