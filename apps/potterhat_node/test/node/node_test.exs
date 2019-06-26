@@ -13,7 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatNode.NodeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   import PotterhatNode.EthereumTestHelper
   alias PotterhatNode.Node
   alias PotterhatNode.Node.RPCResponse

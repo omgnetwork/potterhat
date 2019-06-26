@@ -13,7 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatNode.ActiveNodesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias PotterhatNode.ActiveNodes
 
   setup do

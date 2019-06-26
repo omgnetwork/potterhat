@@ -12,14 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNodeTest do
+defmodule PotterhatRPC.ErrorHandlerTest do
   use ExUnit.Case, async: true
+  use Plug.Test
+  alias PotterhatRPC.ErrorHandler
 
-  doctest PotterhatNode
+  describe "send_resp/3" do
+    test "puts the error object into the connection's response body" do
+      conn = conn(:get, "/some_url")
+      refute conn.resp_body
 
-  describe "get_node_configs/0" do
-    test "returns the node configs" do
-      assert Application.get_env(:potterhat_node, :nodes) == PotterhatNode.get_node_configs()
+      error_conn = ErrorHandler.send_resp(conn, :no_nodes_available, 1234)
+
+      expected = Jason.encode!(%{
+        "jsonrpc" => "2.0",
+        "id" => 1234,
+        "error" => %{
+          "code" => -32099,
+          "message" => "No backend nodes available."
+        }
+      })
+
+      assert expected == error_conn.resp_body
     end
   end
 end
