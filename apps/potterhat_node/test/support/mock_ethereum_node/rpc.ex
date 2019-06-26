@@ -55,7 +55,7 @@ defmodule PotterhatNode.MockEthereumNode.RPC do
       "id" => conn.body_params["id"],
       "jsonrpc" => "2.0",
       "error" => %{
-        "code" => -32601,
+        "code" => -32_601,
         "message" => "Method not found"
       }
     }

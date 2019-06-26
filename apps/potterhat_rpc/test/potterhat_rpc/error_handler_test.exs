@@ -19,7 +19,7 @@ defmodule PotterhatRPC.ErrorHandlerTest do
 
   describe "send_resp/3" do
     test "puts the error object into the connection's response body" do
-      conn = conn(:post, "/some_url", %{id: 1234})
+      conn = conn(:post, "/some_url", %{id: 123})
       refute conn.resp_body
 
       error_conn = ErrorHandler.send_resp(conn, :no_nodes_available)
@@ -27,9 +27,9 @@ defmodule PotterhatRPC.ErrorHandlerTest do
       expected =
         Jason.encode!(%{
           "jsonrpc" => "2.0",
-          "id" => 1234,
+          "id" => 123,
           "error" => %{
-            "code" => -32099,
+            "code" => -32_099,
             "message" => "No backend nodes available."
           }
         })

@@ -13,6 +13,9 @@
 # limitations under the License.
 
 defmodule PotterhatRPC.ConnCase do
+  @moduledoc """
+  Case template for all tests that require interaction with Plug.Conn and Plug.Router.
+  """
   use ExUnit.CaseTemplate
   use Plug.Test
 
