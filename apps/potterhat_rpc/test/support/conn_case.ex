@@ -1,4 +1,4 @@
-# Copyright 2019 OmiseGO Pte Ltd
+# Copyright 2018-2019 OmiseGO Pte Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,27 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatRPC.RouterTest do
-  use PotterhatRPC.ConnCase, async: true
-  alias PotterhatRPC.Router
+defmodule PotterhatRPC.ConnCase do
+  use ExUnit.CaseTemplate
+  use Plug.Test
 
-  describe "GET /" do
-    test "returns status, version and node stats" do
-      response =
-        Router
-        |> call(:get, "/")
-        |> json_response()
-
-      expected = %{
-        "status" => true,
-        "potterhat_version" => Application.get_env(:potterhat_rpc, :version),
-        "nodes" => %{
-          "total" => 0,
-          "active" => 0
-        }
-      }
-
-      assert expected == response
+  using do
+    quote do
+      import unquote(__MODULE__)
     end
+  end
+
+  def call(router, method, path, params \\ nil) do
+    method
+    |> conn(path, params)
+    |> router.call(router.init([]))
+  end
+
+  def json_response(conn) do
+    conn
+    |> Map.fetch!(:resp_body)
+    |> Jason.decode!()
   end
 end
