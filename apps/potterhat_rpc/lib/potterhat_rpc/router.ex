@@ -21,6 +21,7 @@ defmodule PotterhatRPC.Router do
   alias PotterhatRPC.{ErrorHandler, EthForwarder}
 
   plug(Plug.Logger)
+  plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
 
   plug(:match)
   plug(:dispatch)
