@@ -75,7 +75,7 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :new_pending_transactions, decoded})
+    _ = broadcast_linked({:event_received, :new_pending_transaction, decoded})
     {:ok, state}
   end
 end

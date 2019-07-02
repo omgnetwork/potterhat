@@ -74,7 +74,7 @@ defmodule PotterhatNode.Listener.NewHead do
   @impl true
   def handle_frame({_type, msg}, state) do
     {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :new_heads, decoded})
+    _ = broadcast_linked({:event_received, :new_head, decoded})
     {:ok, state}
   end
 end

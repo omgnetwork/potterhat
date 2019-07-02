@@ -190,7 +190,7 @@ defmodule PotterhatNode.Node do
 
   @impl true
   def handle_cast({:event_received, event, message}, state) do
-    _ = EventHandler.handle({event, message}, label: state.label, pid: self())
+    _ = EventHandler.handle({event, message}, node_id: state.id, label: state.label, pid: self())
     {:noreply, state}
   end
 end
