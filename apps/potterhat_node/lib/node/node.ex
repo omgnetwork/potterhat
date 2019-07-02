@@ -18,7 +18,7 @@ defmodule PotterhatNode.Node do
   """
   use GenServer
   require Logger
-  alias PotterhatNode.{ActiveNodes, EventLogger}
+  alias PotterhatNode.{ActiveNodes, EventHandler}
   alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do
@@ -190,7 +190,7 @@ defmodule PotterhatNode.Node do
 
   @impl true
   def handle_cast({:event_received, event, message}, state) do
-    _ = EventLogger.log_event({event, message}, label: state.label, pid: self())
+    _ = EventHandler.handle({event, message}, label: state.label, pid: self())
     {:noreply, state}
   end
 end

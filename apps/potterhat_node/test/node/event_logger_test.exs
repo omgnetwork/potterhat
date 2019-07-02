@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.EventLoggerTest do
+defmodule PotterhatNode.EventHandlerTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
-  alias PotterhatNode.EventLogger
+  alias PotterhatNode.EventHandler
   require Logger
 
   setup do
@@ -34,13 +34,13 @@ defmodule PotterhatNode.EventLoggerTest do
     {:ok, meta}
   end
 
-  describe "log_event/2 with new heads events" do
+  describe "handle_event/2 with new heads events" do
     test "logs when listening started", meta do
       data = %{"result" => "some result"}
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
+          EventHandler.handle({:new_heads, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for new heads started.+/, log)
@@ -51,7 +51,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
+          EventHandler.handle({:new_heads, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -65,20 +65,20 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
+          EventHandler.handle({:new_heads, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): New block 7847441: 0x1234/, log)
     end
   end
 
-  describe "log_event/2 with logs events" do
+  describe "handle_event/2 with logs events" do
     test "logs when listening started", meta do
       data = %{"result" => "some result"}
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
+          EventHandler.handle({:logs, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for logs started.+/, log)
@@ -89,7 +89,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
+          EventHandler.handle({:logs, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -103,7 +103,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
+          EventHandler.handle({:logs, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): New log: .+ "some data"/, log)
@@ -114,20 +114,20 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
+          EventHandler.handle({:logs, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Unknown logs data: "unknown data"/, log)
     end
   end
 
-  describe "log_event/2 with new_pending_transactions" do
+  describe "handle_event/2 with new_pending_transactions" do
     test "logs when listening started", meta do
       data = %{"result" => "some result"}
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
+          EventHandler.handle({:new_pending_transactions, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -141,7 +141,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
+          EventHandler.handle({:new_pending_transactions, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -155,7 +155,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
+          EventHandler.handle({:new_pending_transactions, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -169,7 +169,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
+          EventHandler.handle({:new_pending_transactions, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -179,13 +179,13 @@ defmodule PotterhatNode.EventLoggerTest do
     end
   end
 
-  describe "log_event/2 with sync_status" do
+  describe "handle_event/2 with sync_status" do
     test "logs when listening started", meta do
       data = %{"result" => "some result"}
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
+          EventHandler.handle({:sync_status, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for sync status started.+/, log)
@@ -196,7 +196,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
+          EventHandler.handle({:sync_status, data}, meta.opts)
         end)
 
       assert Regex.match?(
@@ -224,7 +224,7 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
+          EventHandler.handle({:sync_status, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Sync started.+/, log)
@@ -239,20 +239,20 @@ defmodule PotterhatNode.EventLoggerTest do
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
+          EventHandler.handle({:sync_status, data}, meta.opts)
         end)
 
       assert Regex.match?(~r/.+The Node \(#PID<.+>\): Sync stopped.+/, log)
     end
   end
 
-  describe "log_event/2" do
+  describe "handle_event/2" do
     test "logs when received an unknown event", meta do
       data = %{"result" => "some result"}
 
       log =
         capture_log(fn ->
-          EventLogger.log_event({:some_unknown_event, data}, meta.opts)
+          EventHandler.handle({:some_unknown_event, data}, meta.opts)
         end)
 
       assert Regex.match?(

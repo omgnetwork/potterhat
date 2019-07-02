@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.EventLogger do
+defmodule PotterhatNode.EventHandler do
   @moduledoc """
-  Logs received events.
+  Handle received events.
   """
   require Logger
 
   ## New block listening
 
-  def log_event({:new_heads, %{"result" => result}}, opts) when is_binary(result) do
+  def handle({:new_heads, %{"result" => result}}, opts) when is_binary(result) do
     info("Listening for new heads started...", opts)
   end
 
-  def log_event({:new_heads, %{"error" => _} = data}, opts) do
+  def handle({:new_heads, %{"error" => _} = data}, opts) do
     error("Failed to listen to new heads: #{inspect(data)}", opts)
   end
 
-  def log_event({:new_heads, data}, opts) do
+  def handle({:new_heads, data}, opts) do
     block_hash = data["params"]["result"]["hash"]
 
     block_number =
@@ -42,56 +42,56 @@ defmodule PotterhatNode.EventLogger do
 
   ## Logs listening
 
-  def log_event({:logs, %{"result" => result}}, opts) when is_binary(result) do
+  def handle({:logs, %{"result" => result}}, opts) when is_binary(result) do
     info("Listening for logs started...", opts)
   end
 
-  def log_event({:logs, %{"error" => _} = data}, opts) do
+  def handle({:logs, %{"error" => _} = data}, opts) do
     error("Failed to listen to logs: #{inspect(data)}", opts)
   end
 
-  def log_event({:logs, %{"params" => _} = log}, opts) do
+  def handle({:logs, %{"params" => _} = log}, opts) do
     debug("New log: #{inspect(log)}", opts)
   end
 
-  def log_event({:logs, data}, opts) do
+  def handle({:logs, data}, opts) do
     warn("Unknown logs data: #{inspect(data)}", opts)
   end
 
   ## New pending transactions listening
 
-  def log_event({:new_pending_transactions, %{"result" => result}}, opts)
+  def handle({:new_pending_transactions, %{"result" => result}}, opts)
       when is_binary(result) do
     info("Listening for new_pending_transactions started...", opts)
   end
 
-  def log_event({:new_pending_transactions, %{"error" => _} = data}, opts) do
+  def handle({:new_pending_transactions, %{"error" => _} = data}, opts) do
     error("Failed to listen to new_pending_transactions: #{inspect(data)}", opts)
   end
 
-  def log_event({:new_pending_transactions, %{"params" => _} = txn}, opts) do
+  def handle({:new_pending_transactions, %{"params" => _} = txn}, opts) do
     debug("New new_pending_transactions data: #{inspect(txn)}", opts)
   end
 
-  def log_event({:new_pending_transactions, data}, opts) do
+  def handle({:new_pending_transactions, data}, opts) do
     warn("Unknown new_pending_transactions data: #{inspect(data)}", opts)
   end
 
   ## Sync status listening
 
-  def log_event({:sync_status, %{"result" => result}}, opts) when is_binary(result) do
+  def handle({:sync_status, %{"result" => result}}, opts) when is_binary(result) do
     info("Listening for sync status started...", opts)
   end
 
-  def log_event({:sync_status, %{"error" => _} = data}, opts) do
+  def handle({:sync_status, %{"error" => _} = data}, opts) do
     error("Failed to listen to sync status: #{inspect(data)}", opts)
   end
 
-  def log_event({:sync_status, %{"params" => %{"result" => false}}}, opts) do
+  def handle({:sync_status, %{"params" => %{"result" => false}}}, opts) do
     debug("Sync stopped.", opts)
   end
 
-  def log_event({:sync_status, %{"params" => %{"result" => result}}}, opts) do
+  def handle({:sync_status, %{"params" => %{"result" => result}}}, opts) do
     message = """
     Sync started.
       - Starting block: #{result["status"]["StartingBlock"]}"
@@ -102,7 +102,7 @@ defmodule PotterhatNode.EventLogger do
     debug(message, opts)
   end
 
-  def log_event({type, data}, opts) do
+  def handle({type, data}, opts) do
     warn("Unknown event #{inspect(type)} with data: #{inspect(data)}", opts)
   end
 
