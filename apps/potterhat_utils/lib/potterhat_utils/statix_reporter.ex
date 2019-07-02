@@ -13,7 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatUtils.StatixReporter do
-  @doc """
+  @moduledoc """
   Reports events to Statix backend.
   """
   use Statix, runtime_config: true
