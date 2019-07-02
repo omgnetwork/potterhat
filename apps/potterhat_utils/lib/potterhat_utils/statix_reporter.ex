@@ -32,17 +32,41 @@ defmodule PotterhatUtils.StatixReporter do
   end
 
   def handle_event([:node, :event_received, :new_head], measurements, metadata, _config) do
-    _ = increment("potterhat.events.new_head.num_received", 1, tags: ["node_id:#{metadata.node_id}"])
-    _ = gauge("potterhat.events.new_head.latest_block_number", measurements.block_number, tags: ["node_id:#{metadata.node_id}"])
+    _ =
+      increment("potterhat.events.new_head.num_received", 1, tags: ["node_id:#{metadata.node_id}"])
+
+    _ =
+      gauge("potterhat.events.new_head.latest_block_number", measurements.block_number,
+        tags: ["node_id:#{metadata.node_id}"]
+      )
   end
 
-  def handle_event([:node, :event_received, :new_pending_transaction], measurements, metadata, _config) do
-    _ = increment("potterhat.events.new_pending_transaction.num_received", 1, tags: ["node_id:#{metadata.node_id}"])
+  def handle_event(
+        [:node, :event_received, :new_pending_transaction],
+        measurements,
+        metadata,
+        _config
+      ) do
+    _ =
+      increment("potterhat.events.new_pending_transaction.num_received", 1,
+        tags: ["node_id:#{metadata.node_id}"]
+      )
   end
 
   def handle_event([:node, :event_received, :sync_status], measurements, metadata, _config) do
-    _ = increment("potterhat.events.sync_status.num_received", 1, tags: ["node_id:#{metadata.node_id}"])
-    _ = gauge("potterhat.events.sync_status.current_block", measurements.current_block, tags: ["node_id:#{metadata.node_id}"])
-    _ = gauge("potterhat.events.sync_status.highest_block", measurements.highest_block, tags: ["node_id:#{metadata.node_id}"])
+    _ =
+      increment("potterhat.events.sync_status.num_received", 1,
+        tags: ["node_id:#{metadata.node_id}"]
+      )
+
+    _ =
+      gauge("potterhat.events.sync_status.current_block", measurements.current_block,
+        tags: ["node_id:#{metadata.node_id}"]
+      )
+
+    _ =
+      gauge("potterhat.events.sync_status.highest_block", measurements.highest_block,
+        tags: ["node_id:#{metadata.node_id}"]
+      )
   end
 end

@@ -20,12 +20,13 @@ defmodule PotterhatUtils.Application do
   def start(_type, _args) do
     _ = StatixReporter.connect()
 
-    _ = :telemetry.attach_many(
-      "logger",
-      EventLogger.supported_events(),
-      &EventLogger.handle_event/4,
-      nil
-    )
+    _ =
+      :telemetry.attach_many(
+        "logger",
+        EventLogger.supported_events(),
+        &EventLogger.handle_event/4,
+        nil
+      )
 
     opts = [strategy: :one_for_one, name: PotterhatUtils.Supervisor]
     Supervisor.start_link([], opts)

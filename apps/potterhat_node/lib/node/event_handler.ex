@@ -151,11 +151,11 @@ defmodule PotterhatNode.EventHandler do
 
   def handle({:sync_status, %{"params" => %{"result" => result}}}, opts) do
     message = """
-      Sync started.
-        - Starting block: #{result["status"]["StartingBlock"]}"
-        - Current block: #{result["status"]["CurrentBlock"]}"
-        - Highest block: #{result["status"]["HighestBlock"]}"
-      """
+    Sync started.
+      - Starting block: #{result["status"]["StartingBlock"]}"
+      - Current block: #{result["status"]["CurrentBlock"]}"
+      - Highest block: #{result["status"]["HighestBlock"]}"
+    """
 
     _ = debug(message, opts)
 
