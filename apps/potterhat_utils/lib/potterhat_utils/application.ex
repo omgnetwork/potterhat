@@ -15,7 +15,7 @@
 defmodule PotterhatUtils.Application do
   @moduledoc false
   use Application
-  alias PotterhatUtils.{EventLogger, StatixReporter}
+  alias PotterhatUtils.StatixReporter
 
   def start(_type, _args) do
     _ = StatixReporter.connect()
@@ -23,8 +23,8 @@ defmodule PotterhatUtils.Application do
     _ =
       :telemetry.attach_many(
         "logger",
-        EventLogger.supported_events(),
-        &EventLogger.handle_event/4,
+        StatixReporter.supported_events(),
+        &StatixReporter.handle_event/4,
         nil
       )
 
