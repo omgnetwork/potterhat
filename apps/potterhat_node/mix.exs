@@ -48,6 +48,7 @@ defmodule PotterhatNode.MixProject do
       {:jason, "~> 1.1"},
       {:websockex, "~> 0.4.0"},
       {:httpoison, "~> 1.4"},
+      {:telemetry, "~> 0.4.0"},
       # Used for mocking websocket servers
       {:plug_cowboy, "~> 2.0", only: :test}
     ]

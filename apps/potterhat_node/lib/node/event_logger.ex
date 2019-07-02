@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatUtils.StatixReporter do
+defmodule PotterhatNode.EventLogger do
   @moduledoc """
-  Reports events to Statix backend.
+  Logs telemetry events emitted by PotterhatNode.
   """
-  use Statix, runtime_config: true
+  require Logger
 
   @supported_events [
     [:event_listener, :new_head, :subscribe_success],
@@ -36,24 +36,24 @@ defmodule PotterhatUtils.StatixReporter do
 
   def supported_events, do: @supported_events
 
-  # Generate common options to report
-  defp opts(meta), do: [tags: ["node_id:#{meta.node_id}"]]
-
   #
   # New head events
   #
 
   def handle_event([:event_listener, :new_head, :subscribe_success], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_head.num_subscribe_success", 1, opts(meta))
+    info("Listening for new heads started...", meta)
   end
 
   def handle_event([:event_listener, :new_head, :subscribe_failed], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_head.num_subscribe_failed", 1, opts(meta))
+    error("Failed to listen to new heads: #{inspect(meta.error)}", meta)
   end
 
   def handle_event([:event_listener, :new_head, :head_received], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_head.num_received", 1, opts(meta))
-    _ = gauge("potterhat.events.new_head.block_number_received", meta.block_number, opts(meta))
+    debug("New head #{meta.block_number}: #{meta.block_hash}", meta)
+  end
+
+  def handle_event([:event_listener, :new_head, :subscribe_success], _measurements, meta, _config) do
+    info("Listening for new heads started...", meta)
   end
 
   #
@@ -61,15 +61,15 @@ defmodule PotterhatUtils.StatixReporter do
   #
 
   def handle_event([:event_listener, :log, :subscribe_success], _measurements, meta, _config) do
-    _ = increment("potterhat.events.log.num_subscribe_success", 1, opts(meta))
+    info("Listening for logs started...", meta)
   end
 
   def handle_event([:event_listener, :log, :subscribe_failed], _measurements, meta, _config) do
-    _ = increment("potterhat.events.log.num_subscribe_failed", 1, opts(meta))
+    error("Failed to listen to logs: #{inspect(meta.error)}", meta)
   end
 
-  def handle_event([:event_listener, :log, :log_received], _measurements, meta, _config) do
-    _ = increment("potterhat.events.log.num_received", 1, opts(meta))
+  def handle_event([:event_listener, :log, :log_received], measurements, meta, _config) do
+    debug("New log: block #{meta.block_number}, index #{meta.log_index}", meta)
   end
 
   #
@@ -77,15 +77,15 @@ defmodule PotterhatUtils.StatixReporter do
   #
 
   def handle_event([:event_listener, :new_pending_transaction, :subscribe_success], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_pending_transaction.num_subscribe_success", 1, opts(meta))
+    info("Listening for new pending transactions started...", meta)
   end
 
   def handle_event([:event_listener, :new_pending_transaction, :subscribe_failed], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_pending_transaction.num_subscribe_failed", 1, opts(meta))
+    error("Failed to listen to new pending transactions: #{inspect(meta.error)}", meta)
   end
 
-  def handle_event([:event_listener, :new_pending_transaction, :transaction_received], _measurements, meta, _config) do
-    _ = increment("potterhat.events.new_pending_transaction.num_received", 1, opts(meta))
+  def handle_event([:event_listener, :new_pending_transaction, :transaction_received], measurements, meta, _config) do
+    debug("New pending transaction: #{meta.transaction_hash}", meta)
   end
 
   #
@@ -93,22 +93,32 @@ defmodule PotterhatUtils.StatixReporter do
   #
 
   def handle_event([:event_listener, :sync_status, :subscribe_success], _measurements, meta, _config) do
-    _ = increment("potterhat.events.sync_status.num_subscribe_success", 1, opts(meta))
+    info("Listening for sync status started...", meta)
   end
 
   def handle_event([:event_listener, :sync_status, :subscribe_failed], _measurements, meta, _config) do
-    _ = increment("potterhat.events.sync_status.num_subscribe_failed", 1, opts(meta))
+    error("Failed to listen to sync status: #{inspect(meta.error)}", meta)
   end
 
-  def handle_event([:event_listener, :sync_status, :sync_started], _measurements, meta, _config) do
-    _ = increment("potterhat.events.sync_status.num_sync_started", 1, opts(meta))
-    _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))
+  def handle_event([:event_listener, :sync_status, :sync_started], measurements, meta, _config) do
+    message = """
+    Sync started.
+      - Starting block: #{measurements.starting_block}"
+      - Current block: #{measurements.current_block}"
+      - Highest block: #{measurements.highest_block}"
+    """
+
+    debug(message, meta)
   end
 
-  def handle_event([:event_listener, :sync_status, :sync_stopped], measurements, meta, _config) do
-    _ = increment("potterhat.events.sync_status.num_sync_stopped", 1, opts(meta))
-    _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))
-    _ = gauge("potterhat.events.sync_status.current_block", measurements.current_block, opts(meta))
-    _ = gauge("potterhat.events.sync_status.highest_block", measurements.highest_block, opts(meta))
+  def handle_event([:event_listener, :sync_status, :sync_stopped], _measurements, meta, _config) do
+    debug("Sync stopped.", meta)
   end
+
+  defp debug(message, meta), do: message |> prefix_with(meta) |> Logger.debug()
+  defp info(message, meta), do: message |> prefix_with(meta) |> Logger.info()
+  defp warn(message, meta), do: message |> prefix_with(meta) |> Logger.warn()
+  defp error(message, meta), do: message |> prefix_with(meta) |> Logger.error()
+
+  defp prefix_with(message, meta), do: "#{meta.node_id}: #{message}"
 end

@@ -22,7 +22,7 @@ defmodule PotterhatUtils.Application do
 
     _ =
       :telemetry.attach_many(
-        "logger",
+        "statix-reporter",
         StatixReporter.supported_events(),
         &StatixReporter.handle_event/4,
         nil

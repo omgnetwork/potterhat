@@ -74,8 +74,62 @@ defmodule PotterhatNode.Listener.SyncStatus do
   @doc false
   @impl true
   def handle_frame({_type, msg}, state) do
-    {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :sync_status, decoded})
+    {:ok, data} = Jason.decode(msg)
+    state = do_handle_frame(data, state)
     {:ok, state}
+  end
+
+  #
+  # Handle received websocket frames
+  #
+
+  # Successful subscription
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result)  do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label]
+    }
+
+    _ = :telemetry.execute([:event_listener, :sync_status, :subscribe_success], %{}, meta)
+    state
+  end
+
+  # Failed subscription
+  defp do_handle_frame(%{"error" => error}, state) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label],
+      error: error
+    }
+
+    _ = :telemetry.execute([:event_listener, :sync_status, :subscribe_failed], %{}, meta)
+    state
+  end
+
+  # Sync stopped
+  defp do_handle_frame(%{"params" => %{"result" => false}}, state) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label]
+    }
+
+    :telemetry.execute([:event_listener, :sync_status, :sync_stopped], %{}, meta)
+  end
+
+  # Sync started
+  defp do_handle_frame(%{"params" => _} = data, state) do
+    measurements = %{
+      starting_block: data["params"]["status"]["StartingBlock"],
+      current_block: data["params"]["status"]["CurrentBlock"],
+      highest_block: data["params"]["status"]["HighestBlock"]
+    }
+
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label]
+    }
+
+    _ = :telemetry.execute([:event_listener, :sync_status, :sync_started], measurements, meta)
+    state
   end
 end
