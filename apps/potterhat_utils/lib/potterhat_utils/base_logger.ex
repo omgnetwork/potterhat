@@ -23,6 +23,6 @@ defmodule PotterhatUtils.BaseLogger do
   def warn(message, meta), do: message |> prefix_with(meta) |> Logger.warn()
   def error(message, meta), do: message |> prefix_with(meta) |> Logger.error()
 
-  def prefix_with(message, %{node_id: _} = meta), do: "#{meta.node_id}: #{message}"
-  def prefix_with(message, meta), do: message
+  defp prefix_with(message, %{node_id: _} = meta), do: "#{meta.node_id}: #{message}"
+  defp prefix_with(message, meta), do: message
 end

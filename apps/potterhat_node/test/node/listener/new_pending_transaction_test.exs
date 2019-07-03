@@ -13,7 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatNode.NewPendingTransactionTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   import PotterhatNode.EthereumTestHelper
   import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.Listener.NewPendingTransaction

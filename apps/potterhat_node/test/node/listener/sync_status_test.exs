@@ -13,7 +13,7 @@
 # limitations under the License.
 
 defmodule PotterhatNode.SyncStatusTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   import PotterhatNode.EthereumTestHelper
   import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.Listener.SyncStatus
