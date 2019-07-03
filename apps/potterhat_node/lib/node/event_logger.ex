@@ -21,6 +21,7 @@ defmodule PotterhatNode.EventLogger do
   @supported_events [
     [:active_nodes, :registered],
     [:active_nodes, :deregistered],
+    [:rpc, :request, :failed_over],
     [:event_listener, :new_head, :subscribe_success],
     [:event_listener, :new_head, :subscribe_failed],
     [:event_listener, :new_head, :head_received],
@@ -48,6 +49,14 @@ defmodule PotterhatNode.EventLogger do
 
   def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
     debug("Deregistered node: #{inspect(meta.pid)}. Active nodes: #{measurements.num_active}.", meta)
+  end
+
+  #
+  # RPC requests
+  #
+
+  def handle_event([:rpc, :request, :failed_over], _measurements, meta, _config) do
+    error("Retrying the request with the next available node.", meta)
   end
 
   #

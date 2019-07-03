@@ -21,6 +21,11 @@ defmodule PotterhatUtils.StatixReporter do
   @supported_events [
     [:active_nodes, :registered],
     [:active_nodes, :deregistered],
+    [:rpc, :request, :start],
+    [:rpc, :request, :stop],
+    [:rpc, :request, :success],
+    [:rpc, :request, :failed],
+    [:rpc, :request, :failed_over],
     [:event_listener, :new_head, :subscribe_success],
     [:event_listener, :new_head, :subscribe_failed],
     [:event_listener, :new_head, :head_received],
@@ -38,10 +43,6 @@ defmodule PotterhatUtils.StatixReporter do
 
   def supported_events, do: @supported_events
 
-  # Generate common options to report
-  defp opts(%{node_id: _} = meta), do: [tags: ["node_id:#{meta.node_id}"]]
-  defp opts(meta), do: []
-
   #
   # Active nodes
   #
@@ -54,6 +55,35 @@ defmodule PotterhatUtils.StatixReporter do
   def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
     _ = increment("potterhat.active_nodes.num_deregistered", 1, opts(meta))
     _ = gauge("potterhat.active_nodes.total_active", measurements.num_active, opts(meta))
+  end
+
+  #
+  # RPC requests
+  #
+
+  def handle_event([:rpc, :request, :start], _measurements, meta, _config) do
+    eth_method = meta.conn.assigns[:eth_method]
+    _ = increment("potterhat.rpc.num_requests", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
+  end
+
+  def handle_event([:rpc, :request, :stop], measurements, meta, _config) do
+    eth_method = meta.conn.assigns[:eth_method]
+    _ = timing("potterhat.rpc.response_time", measurements.duration, opts(meta, tags: ["eth_method:#{eth_method}"]))
+  end
+
+  def handle_event([:rpc, :request, :success], _measurements, meta, _config) do
+    eth_method = meta.conn.assigns[:eth_method]
+    _ = increment("potterhat.rpc.num_success", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
+  end
+
+  def handle_event([:rpc, :request, :failed], measurements, meta, _config) do
+    eth_method = meta.conn.assigns[:eth_method]
+    _ = increment("potterhat.rpc.num_failed", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
+  end
+
+  def handle_event([:rpc, :request, :failed_over], _measurements, meta, _config) do
+    eth_method = meta.body_params["method"]
+    _ = increment("potterhat.rpc.num_failed_over", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
   end
 
   #
@@ -128,4 +158,21 @@ defmodule PotterhatUtils.StatixReporter do
     _ = gauge("potterhat.events.sync_status.current_block", measurements.current_block, opts(meta))
     _ = gauge("potterhat.events.sync_status.highest_block", measurements.highest_block, opts(meta))
   end
+
+  #
+  # Generate Statix options
+  #
+
+  defp opts(meta, opts \\ [])
+
+  # Add a node_id tag if node_id is present in the metadata
+  defp opts(%{node_id: node_id}, opts) do
+    node_tag = "node_id:#{node_id}"
+
+    Keyword.update(opts, :tags, [node_tag], fn tags ->
+      [node_tag | tags]
+    end)
+  end
+
+  defp opts(_meta, opts), do: opts
 end

@@ -38,6 +38,7 @@ defmodule PotterhatRPC.EthForwarder do
 
       {:error, error} ->
         _ = Logger.error("Failed to serve the RPC request from #{label}: #{inspect(error)}.")
+        _ = :telemetry.execute([:rpc, :request, :failed_over], %{}, %{body_params: body_params})
         do_forward(remaining, body_params, header_params)
     end
   end

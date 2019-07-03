@@ -45,7 +45,8 @@ defmodule PotterhatRPC.MixProject do
     [
       {:jason, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
-      {:potterhat_node, in_umbrella: true}
+      {:potterhat_node, in_umbrella: true},
+      {:telemetry, "~> 0.4.0"}
     ]
   end
 end
