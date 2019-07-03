@@ -19,6 +19,8 @@ defmodule PotterhatUtils.StatixReporter do
   use Statix, runtime_config: true
 
   @supported_events [
+    [:active_nodes, :registered],
+    [:active_nodes, :deregistered],
     [:event_listener, :new_head, :subscribe_success],
     [:event_listener, :new_head, :subscribe_failed],
     [:event_listener, :new_head, :head_received],
@@ -37,7 +39,22 @@ defmodule PotterhatUtils.StatixReporter do
   def supported_events, do: @supported_events
 
   # Generate common options to report
-  defp opts(meta), do: [tags: ["node_id:#{meta.node_id}"]]
+  defp opts(%{node_id: _} = meta), do: [tags: ["node_id:#{meta.node_id}"]]
+  defp opts(meta), do: []
+
+  #
+  # Active nodes
+  #
+
+  def handle_event([:active_nodes, :registered], measurements, meta, _config) do
+    _ = increment("potterhat.active_nodes.num_registered", 1, opts(meta))
+    _ = gauge("potterhat.active_nodes.total_active", measurements.num_active, opts(meta))
+  end
+
+  def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
+    _ = increment("potterhat.active_nodes.num_deregistered", 1, opts(meta))
+    _ = gauge("potterhat.active_nodes.total_active", measurements.num_active, opts(meta))
+  end
 
   #
   # New head events

@@ -19,6 +19,8 @@ defmodule PotterhatNode.EventLogger do
   require Logger
 
   @supported_events [
+    [:active_nodes, :registered],
+    [:active_nodes, :deregistered],
     [:event_listener, :new_head, :subscribe_success],
     [:event_listener, :new_head, :subscribe_failed],
     [:event_listener, :new_head, :head_received],
@@ -35,6 +37,18 @@ defmodule PotterhatNode.EventLogger do
   ]
 
   def supported_events, do: @supported_events
+
+  #
+  # Active nodes
+  #
+
+  def handle_event([:active_nodes, :registered], measurements, meta, _config) do
+    debug("Registered node: #{inspect(meta.pid)}. Active nodes: #{measurements.num_active}.", meta)
+  end
+
+  def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
+    debug("Deregistered node: #{inspect(meta.pid)}. Active nodes: #{measurements.num_active}.", meta)
+  end
 
   #
   # New head events
@@ -120,5 +134,6 @@ defmodule PotterhatNode.EventLogger do
   defp warn(message, meta), do: message |> prefix_with(meta) |> Logger.warn()
   defp error(message, meta), do: message |> prefix_with(meta) |> Logger.error()
 
-  defp prefix_with(message, meta), do: "#{meta.node_id}: #{message}"
+  defp prefix_with(message, %{node_id: _} = meta), do: "#{meta.node_id}: #{message}"
+  defp prefix_with(message, meta), do: message
 end
