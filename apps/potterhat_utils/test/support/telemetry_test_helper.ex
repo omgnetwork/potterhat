@@ -38,14 +38,14 @@ defmodule PotterhatUtils.TelemetryTestHelper do
   def assert_telemetry(event_name) do
     received =
       receive do
-        {:telemetry_received, event} -> {:ok, event}
+        {:telemetry_receied, event} -> {:ok, event}
       after
         100 -> nil
       end
 
     case received do
       {:ok, {received_name, _, _, _}} -> assert received_name == event_name
-      _ -> flunk("No telemetry event received.")
+      _ -> flunk("The telemetry event #{inspect(event_name)} was never received.")
     end
   end
 
