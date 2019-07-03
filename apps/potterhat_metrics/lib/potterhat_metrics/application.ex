@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatUtils.Application do
+defmodule PotterhatMetrics.Application do
   @moduledoc false
   use Application
   alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
-    :ok = TelemetrySubscriber.attach_from_config(:potterhat_utils)
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_metrics)
 
-    opts = [strategy: :one_for_one, name: PotterhatUtils.Supervisor]
+    opts = [strategy: :one_for_one, name: PotterhatMetrics.Supervisor]
     Supervisor.start_link([], opts)
   end
 end

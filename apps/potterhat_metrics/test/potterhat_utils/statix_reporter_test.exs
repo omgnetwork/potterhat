@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatUtils.StatixReporterTest do
+defmodule PotterhatMetrics.StatixReporterTest do
   # Async false due to changing log level
   use ExUnit.Case, async: false
-  alias PotterhatUtils.StatixReporter
+  alias PotterhatMetrics.StatixReporter
   alias Plug.Conn
 
   defmodule MockStatixServer do

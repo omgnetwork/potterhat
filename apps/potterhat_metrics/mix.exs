@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatUtils.MixProject do
+defmodule PotterhatMetrics.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :potterhat_utils,
+      app: :potterhat_metrics,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -32,7 +32,8 @@ defmodule PotterhatUtils.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {PotterhatMetrics.Application, []}
     ]
   end
 
@@ -42,6 +43,8 @@ defmodule PotterhatUtils.MixProject do
 
   defp deps do
     [
+      {:potterhat_utils, in_umbrella: true},
+      {:statix, "~> 1.2.0"},
       {:telemetry, "~> 0.4.0"}
     ]
   end
