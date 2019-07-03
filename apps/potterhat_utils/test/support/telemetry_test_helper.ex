@@ -44,7 +44,7 @@ defmodule PotterhatUtils.TelemetryTestHelper do
       end
 
     case received do
-      {:ok, {^event_name, _, _, _}} -> assert(true)
+      {:ok, {received_name, _, _, _}} -> assert received_name == event_name
       _ -> flunk("No telemetry event received.")
     end
   end
