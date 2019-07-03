@@ -35,9 +35,10 @@ defmodule PotterhatUtils.BaseLoggerTest do
     test "logs a debug message with node_id prefixed", meta do
       :ok = Logger.configure(level: :debug)
 
-      log = capture_log(fn ->
-        BaseLogger.debug(meta.message, meta.log_meta)
-      end)
+      log =
+        capture_log(fn ->
+          BaseLogger.debug(meta.message, meta.log_meta)
+        end)
 
       assert log =~ "[debug] some_node_id: Some log message"
     end
@@ -47,9 +48,10 @@ defmodule PotterhatUtils.BaseLoggerTest do
     test "logs an info message with node_id prefixed", meta do
       :ok = Logger.configure(level: :info)
 
-      log = capture_log(fn ->
-        BaseLogger.info(meta.message, meta.log_meta)
-      end)
+      log =
+        capture_log(fn ->
+          BaseLogger.info(meta.message, meta.log_meta)
+        end)
 
       assert log =~ "[info] some_node_id: Some log message"
     end
@@ -57,9 +59,10 @@ defmodule PotterhatUtils.BaseLoggerTest do
 
   describe "warn/2" do
     test "logs a warn message with node_id prefixed", meta do
-      log = capture_log(fn ->
-        BaseLogger.warn(meta.message, meta.log_meta)
-      end)
+      log =
+        capture_log(fn ->
+          BaseLogger.warn(meta.message, meta.log_meta)
+        end)
 
       assert log =~ "[warn] some_node_id: Some log message"
     end
@@ -67,9 +70,10 @@ defmodule PotterhatUtils.BaseLoggerTest do
 
   describe "error/2" do
     test "logs an error message with node_id prefixed", meta do
-      log = capture_log(fn ->
-        BaseLogger.error(meta.message, meta.log_meta)
-      end)
+      log =
+        capture_log(fn ->
+          BaseLogger.error(meta.message, meta.log_meta)
+        end)
 
       assert log =~ "[error] some_node_id: Some log message"
     end

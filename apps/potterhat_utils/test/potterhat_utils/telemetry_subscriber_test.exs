@@ -42,7 +42,7 @@ defmodule PotterhatUtils.TelemetrySubscriberTest do
 
       :ok = TelemetrySubscriber.attach(handler_id, MockSubscriber)
 
-    # Assert that the handler is added
+      # Assert that the handler is added
       handlers = :telemetry.list_handlers(@event)
       assert Enum.any?(handlers, fn h -> h.id == handler_id end)
     end

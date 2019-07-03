@@ -62,12 +62,13 @@ defmodule PotterhatUtils.StatixReporterTest do
 
     # Sets up telemetry handler
 
-    :ok = :telemetry.attach_many(
-      handler_id,
-      StatixReporter.supported_events(),
-      &StatixReporter.handle_event/4,
-      nil
-    )
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        StatixReporter.supported_events(),
+        &StatixReporter.handle_event/4,
+        nil
+      )
 
     :ok = on_exit(fn -> :telemetry.detach(handler_id) end)
 
@@ -95,23 +96,30 @@ defmodule PotterhatUtils.StatixReporterTest do
       measurements = %{num_active: 10}
       :telemetry.execute([:active_nodes, :registered], measurements, meta())
 
-      assert_receive {:statix_event, 'potterhat.active_nodes.num_registered:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.active_nodes.num_registered:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:active_nodes, :deregistered]" do
       measurements = %{num_active: 10}
       :telemetry.execute([:active_nodes, :deregistered], measurements, meta())
 
-      assert_receive {:statix_event, 'potterhat.active_nodes.num_deregistered:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.active_nodes.num_deregistered:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:rpc, :request, :start]" do
       meta = meta(conn: %Conn{assigns: %{eth_method: "eth_method"}})
       :telemetry.execute([:rpc, :request, :start], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.rpc.num_requests:1|c|#node_id:some_node_id,eth_method:eth_method'}
+      assert_receive {:statix_event,
+                      'potterhat.rpc.num_requests:1|c|#node_id:some_node_id,eth_method:eth_method'}
     end
 
     test "sends metrics for [:rpc, :request, :stop]" do
@@ -119,21 +127,24 @@ defmodule PotterhatUtils.StatixReporterTest do
       meta = meta(conn: %Conn{assigns: %{eth_method: "eth_method"}})
       :telemetry.execute([:rpc, :request, :stop], measurements, meta)
 
-      assert_receive {:statix_event, 'potterhat.rpc.response_time:123|ms|#node_id:some_node_id,eth_method:eth_method'}
+      assert_receive {:statix_event,
+                      'potterhat.rpc.response_time:123|ms|#node_id:some_node_id,eth_method:eth_method'}
     end
 
     test "sends metrics for [:rpc, :request, :success]" do
       meta = meta(conn: %Conn{assigns: %{eth_method: "eth_method"}})
       :telemetry.execute([:rpc, :request, :success], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.rpc.num_success:1|c|#node_id:some_node_id,eth_method:eth_method'}
+      assert_receive {:statix_event,
+                      'potterhat.rpc.num_success:1|c|#node_id:some_node_id,eth_method:eth_method'}
     end
 
     test "sends metrics for [:rpc, :request, :failed]" do
       meta = meta(conn: %Conn{assigns: %{eth_method: "eth_method"}})
       :telemetry.execute([:rpc, :request, :failed], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.rpc.num_failed:1|c|#node_id:some_node_id,eth_method:eth_method'}
+      assert_receive {:statix_event,
+                      'potterhat.rpc.num_failed:1|c|#node_id:some_node_id,eth_method:eth_method'}
     end
 
     # Set capture_log to ignore the failed_over error log
@@ -141,97 +152,149 @@ defmodule PotterhatUtils.StatixReporterTest do
     test "sends metrics for [:rpc, :request, :failed_over]" do
       meta = meta(body_params: %{"method" => "eth_method"})
       :telemetry.execute([:rpc, :request, :failed_over], measurements(), meta)
-      assert_receive {:statix_event, 'potterhat.rpc.num_failed_over:1|c|#node_id:some_node_id,eth_method:eth_method'}
+
+      assert_receive {:statix_event,
+                      'potterhat.rpc.num_failed_over:1|c|#node_id:some_node_id,eth_method:eth_method'}
     end
 
     test "sends metrics for [:event_listener, :new_head, :subscribe_success]" do
       :telemetry.execute([:event_listener, :new_head, :subscribe_success], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.new_head.num_subscribe_success:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_head.num_subscribe_success:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :new_head, :subscribe_failed]" do
       :telemetry.execute([:event_listener, :new_head, :subscribe_failed], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.new_head.num_subscribe_failed:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_head.num_subscribe_failed:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :new_head, :head_received]" do
       meta = meta(block_number: 123)
       :telemetry.execute([:event_listener, :new_head, :head_received], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.new_head.num_received:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.events.new_head.block_number_received:123|g|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.events.new_head.num_received:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_head.block_number_received:123|g|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :log, :subscribe_success]" do
       :telemetry.execute([:event_listener, :log, :subscribe_success], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.log.num_subscribe_success:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.log.num_subscribe_success:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :log, :subscribe_failed]" do
       :telemetry.execute([:event_listener, :log, :subscribe_failed], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.log.num_subscribe_failed:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.log.num_subscribe_failed:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :log, :log_received]" do
       meta = meta(block_number: 123)
       :telemetry.execute([:event_listener, :log, :log_received], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.log.num_received:1|c|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.events.log.num_received:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :new_pending_transaction, :subscribe_success]" do
-      :telemetry.execute([:event_listener, :new_pending_transaction, :subscribe_success], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.new_pending_transaction.num_subscribe_success:1|c|#node_id:some_node_id'}
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :subscribe_success],
+        measurements(),
+        meta()
+      )
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_pending_transaction.num_subscribe_success:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :new_pending_transaction, :subscribe_failed]" do
-      :telemetry.execute([:event_listener, :new_pending_transaction, :subscribe_failed], measurements(), meta())
-      assert_receive {:statix_event, 'potterhat.events.new_pending_transaction.num_subscribe_failed:1|c|#node_id:some_node_id'}
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :subscribe_failed],
+        measurements(),
+        meta()
+      )
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_pending_transaction.num_subscribe_failed:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :new_pending_transaction, :transaction_received]" do
       meta = meta(block_number: 123)
-      :telemetry.execute([:event_listener, :new_pending_transaction, :transaction_received], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.new_pending_transaction.num_received:1|c|#node_id:some_node_id'}
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :transaction_received],
+        measurements(),
+        meta
+      )
+
+      assert_receive {:statix_event,
+                      'potterhat.events.new_pending_transaction.num_received:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :sync_status, :subscribe_success]" do
       meta = meta(node_id: :some_node_id, pid: self())
-      :telemetry.execute([:event_listener, :sync_status, :subscribe_success], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_subscribe_success:1|c|#node_id:some_node_id'}
+      :telemetry.execute(
+        [:event_listener, :sync_status, :subscribe_success],
+        measurements(),
+        meta
+      )
+
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_subscribe_success:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :sync_status, :subscribe_failed]" do
       meta = meta(block_number: 123)
       :telemetry.execute([:event_listener, :sync_status, :subscribe_failed], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_subscribe_failed:1|c|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_subscribe_failed:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :sync_status, :sync_started]" do
       meta = meta(block_number: 123)
       :telemetry.execute([:event_listener, :sync_status, :sync_started], measurements(), meta)
 
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_sync_started:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_received:1|c|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_sync_started:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_received:1|c|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:event_listener, :sync_status, :sync_stopped]" do
       measurements = measurements(current_block: 123, highest_block: 321)
       :telemetry.execute([:event_listener, :sync_status, :sync_stopped], measurements, meta())
 
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_sync_stopped:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.events.sync_status.num_received:1|c|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.events.sync_status.current_block:123|g|#node_id:some_node_id'}
-      assert_receive {:statix_event, 'potterhat.events.sync_status.highest_block:321|g|#node_id:some_node_id'}
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_sync_stopped:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.num_received:1|c|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.current_block:123|g|#node_id:some_node_id'}
+
+      assert_receive {:statix_event,
+                      'potterhat.events.sync_status.highest_block:321|g|#node_id:some_node_id'}
     end
   end
 
   defp measurements(extras \\ []) do
     default_measurements = %{}
-    Enum.reduce(extras, default_measurements, fn {key, value}, meta -> Map.put(meta, key, value) end)
+
+    Enum.reduce(extras, default_measurements, fn {key, value}, meta ->
+      Map.put(meta, key, value)
+    end)
   end
 
   defp meta(extras \\ []) do

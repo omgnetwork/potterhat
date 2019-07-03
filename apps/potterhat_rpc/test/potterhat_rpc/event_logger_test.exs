@@ -21,12 +21,13 @@ defmodule PotterhatRPC.EventLoggerTest do
   setup do
     handler_id = "test_rpc_event_logger_#{:rand.uniform(999_999)}"
 
-    :ok = :telemetry.attach_many(
-      handler_id,
-      EventLogger.supported_events(),
-      &EventLogger.handle_event/4,
-      nil
-    )
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        EventLogger.supported_events(),
+        &EventLogger.handle_event/4,
+        nil
+      )
 
     :ok = on_exit(fn -> :telemetry.detach(handler_id) end)
 
@@ -38,10 +39,11 @@ defmodule PotterhatRPC.EventLoggerTest do
 
   describe "supported_events/0" do
     test "returns a list of telemetry events" do
-      :ok = Enum.each(EventLogger.supported_events(), fn event ->
-        assert is_list(event)
-        assert Enum.all?(event, fn item -> is_atom(item) end)
-      end)
+      :ok =
+        Enum.each(EventLogger.supported_events(), fn event ->
+          assert is_list(event)
+          assert Enum.all?(event, fn item -> is_atom(item) end)
+        end)
     end
   end
 
@@ -55,8 +57,8 @@ defmodule PotterhatRPC.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:rpc, :server, :starting], %{}, meta)
-      end) =~ "[info] some_node_id: Starting RPC server"
+               :telemetry.execute([:rpc, :server, :starting], %{}, meta)
+             end) =~ "[info] some_node_id: Starting RPC server"
     end
 
     test "logs an error message for [:rpc, :request, :failed_over]" do
@@ -66,8 +68,8 @@ defmodule PotterhatRPC.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:rpc, :request, :failed_over], %{}, meta)
-      end) =~ "[error] some_node_id: Retrying the request"
+               :telemetry.execute([:rpc, :request, :failed_over], %{}, meta)
+             end) =~ "[error] some_node_id: Retrying the request"
     end
   end
 end

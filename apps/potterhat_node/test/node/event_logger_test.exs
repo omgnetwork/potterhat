@@ -21,12 +21,13 @@ defmodule PotterhatNode.EventLoggerTest do
   setup do
     handler_id = "test_rpc_event_logger_#{:rand.uniform(999_999)}"
 
-    :ok = :telemetry.attach_many(
-      handler_id,
-      EventLogger.supported_events(),
-      &EventLogger.handle_event/4,
-      nil
-    )
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        EventLogger.supported_events(),
+        &EventLogger.handle_event/4,
+        nil
+      )
 
     :ok = on_exit(fn -> :telemetry.detach(handler_id) end)
 
@@ -48,6 +49,7 @@ defmodule PotterhatNode.EventLoggerTest do
   describe "handle_event/4" do
     test "logs a debug message for [:active_nodes, :registered]" do
       :ok = Logger.configure(level: :debug)
+
       measurements = %{
         num_active: 2
       }
@@ -58,12 +60,13 @@ defmodule PotterhatNode.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:active_nodes, :registered], measurements, meta)
-      end) =~ "[debug] some_node_id: Registered node:"
+               :telemetry.execute([:active_nodes, :registered], measurements, meta)
+             end) =~ "[debug] some_node_id: Registered node:"
     end
 
     test "logs a debug message for [:active_nodes, :deregistered]" do
       :ok = Logger.configure(level: :debug)
+
       measurements = %{
         num_active: 1
       }
@@ -74,8 +77,8 @@ defmodule PotterhatNode.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:active_nodes, :deregistered], measurements, meta)
-      end) =~ "[debug] some_node_id: Deregistered node:"
+               :telemetry.execute([:active_nodes, :deregistered], measurements, meta)
+             end) =~ "[debug] some_node_id: Deregistered node:"
     end
 
     test "logs an error message for [:rpc, :request, :failed_over]" do
@@ -86,8 +89,8 @@ defmodule PotterhatNode.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:rpc, :request, :failed_over], measurements, meta)
-      end) =~ "[error] some_node_id: Retrying the request"
+               :telemetry.execute([:rpc, :request, :failed_over], measurements, meta)
+             end) =~ "[error] some_node_id: Retrying the request"
     end
 
     test "logs an info message for [:event_listener, :new_head, :subscribe_success]" do
@@ -95,12 +98,16 @@ defmodule PotterhatNode.EventLoggerTest do
       measurements = %{}
 
       meta = %{
-        node_id: :some_node_id,
+        node_id: :some_node_id
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:event_listener, :new_head, :subscribe_success], measurements, meta)
-      end) =~ "[info] some_node_id: Listening for new heads started"
+               :telemetry.execute(
+                 [:event_listener, :new_head, :subscribe_success],
+                 measurements,
+                 meta
+               )
+             end) =~ "[info] some_node_id: Listening for new heads started"
     end
 
     test "logs an error message for [:event_listener, :new_head, :subscribe_failed]" do
@@ -112,8 +119,12 @@ defmodule PotterhatNode.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:event_listener, :new_head, :subscribe_failed], measurements, meta)
-      end) =~ "[error] some_node_id: Failed to listen to new heads"
+               :telemetry.execute(
+                 [:event_listener, :new_head, :subscribe_failed],
+                 measurements,
+                 meta
+               )
+             end) =~ "[error] some_node_id: Failed to listen to new heads"
     end
 
     test "logs a debug message for [:event_listener, :new_head, :head_received]" do
@@ -127,8 +138,12 @@ defmodule PotterhatNode.EventLoggerTest do
       }
 
       assert capture_log(fn ->
-        :telemetry.execute([:event_listener, :new_head, :head_received], measurements, meta)
-      end) =~ "[debug] some_node_id: New head 1234: 0x1234"
+               :telemetry.execute(
+                 [:event_listener, :new_head, :head_received],
+                 measurements,
+                 meta
+               )
+             end) =~ "[debug] some_node_id: New head 1234: 0x1234"
     end
   end
 end
