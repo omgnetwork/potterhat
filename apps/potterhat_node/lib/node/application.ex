@@ -15,18 +15,11 @@
 defmodule PotterhatNode.Application do
   @moduledoc false
   use Application
-  alias PotterhatNode.EventLogger
+  alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_node)
-
-    _ =
-      :telemetry.attach_many(
-        "node-logger",
-        EventLogger.supported_events(),
-        &EventLogger.handle_event/4,
-        nil
-      )
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_node)
 
     children = [PotterhatNode.ActiveNodes | nodes()]
 

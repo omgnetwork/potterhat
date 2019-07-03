@@ -15,18 +15,10 @@
 defmodule PotterhatUtils.Application do
   @moduledoc false
   use Application
-  alias PotterhatUtils.StatixReporter
+  alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
-    _ = StatixReporter.connect()
-
-    _ =
-      :telemetry.attach_many(
-        "statix-reporter",
-        StatixReporter.supported_events(),
-        &StatixReporter.handle_event/4,
-        nil
-      )
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_utils)
 
     opts = [strategy: :one_for_one, name: PotterhatUtils.Supervisor]
     Supervisor.start_link([], opts)

@@ -18,6 +18,8 @@ defmodule PotterhatUtils.StatixReporter do
   """
   use Statix, runtime_config: true
 
+  @behaviour PotterhatUtils.TelemetrySubscriber
+
   @supported_events [
     [:active_nodes, :registered],
     [:active_nodes, :deregistered],
@@ -41,17 +43,25 @@ defmodule PotterhatUtils.StatixReporter do
     [:event_listener, :sync_status, :sync_stopped]
   ]
 
+  @impl true
+  def init do
+    __MODULE__.connect()
+  end
+
+  @impl true
   def supported_events, do: @supported_events
 
   #
   # Active nodes
   #
 
+  @impl true
   def handle_event([:active_nodes, :registered], measurements, meta, _config) do
     _ = increment("potterhat.active_nodes.num_registered", 1, opts(meta))
     _ = gauge("potterhat.active_nodes.total_active", measurements.num_active, opts(meta))
   end
 
+  @impl true
   def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
     _ = increment("potterhat.active_nodes.num_deregistered", 1, opts(meta))
     _ = gauge("potterhat.active_nodes.total_active", measurements.num_active, opts(meta))
@@ -61,26 +71,31 @@ defmodule PotterhatUtils.StatixReporter do
   # RPC requests
   #
 
+  @impl true
   def handle_event([:rpc, :request, :start], _measurements, meta, _config) do
     eth_method = meta.conn.assigns[:eth_method]
     _ = increment("potterhat.rpc.num_requests", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
   end
 
+  @impl true
   def handle_event([:rpc, :request, :stop], measurements, meta, _config) do
     eth_method = meta.conn.assigns[:eth_method]
     _ = timing("potterhat.rpc.response_time", measurements.duration, opts(meta, tags: ["eth_method:#{eth_method}"]))
   end
 
+  @impl true
   def handle_event([:rpc, :request, :success], _measurements, meta, _config) do
     eth_method = meta.conn.assigns[:eth_method]
     _ = increment("potterhat.rpc.num_success", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
   end
 
-  def handle_event([:rpc, :request, :failed], measurements, meta, _config) do
+  @impl true
+  def handle_event([:rpc, :request, :failed], _measurements, meta, _config) do
     eth_method = meta.conn.assigns[:eth_method]
     _ = increment("potterhat.rpc.num_failed", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
   end
 
+  @impl true
   def handle_event([:rpc, :request, :failed_over], _measurements, meta, _config) do
     eth_method = meta.body_params["method"]
     _ = increment("potterhat.rpc.num_failed_over", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
@@ -90,14 +105,17 @@ defmodule PotterhatUtils.StatixReporter do
   # New head events
   #
 
+  @impl true
   def handle_event([:event_listener, :new_head, :subscribe_success], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_head.num_subscribe_success", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :new_head, :subscribe_failed], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_head.num_subscribe_failed", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :new_head, :head_received], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_head.num_received", 1, opts(meta))
     _ = gauge("potterhat.events.new_head.block_number_received", meta.block_number, opts(meta))
@@ -107,14 +125,17 @@ defmodule PotterhatUtils.StatixReporter do
   # Log events
   #
 
+  @impl true
   def handle_event([:event_listener, :log, :subscribe_success], _measurements, meta, _config) do
     _ = increment("potterhat.events.log.num_subscribe_success", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :log, :subscribe_failed], _measurements, meta, _config) do
     _ = increment("potterhat.events.log.num_subscribe_failed", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :log, :log_received], _measurements, meta, _config) do
     _ = increment("potterhat.events.log.num_received", 1, opts(meta))
   end
@@ -123,14 +144,17 @@ defmodule PotterhatUtils.StatixReporter do
   # New pending transaction events
   #
 
+  @impl true
   def handle_event([:event_listener, :new_pending_transaction, :subscribe_success], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_pending_transaction.num_subscribe_success", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :new_pending_transaction, :subscribe_failed], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_pending_transaction.num_subscribe_failed", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :new_pending_transaction, :transaction_received], _measurements, meta, _config) do
     _ = increment("potterhat.events.new_pending_transaction.num_received", 1, opts(meta))
   end
@@ -139,19 +163,23 @@ defmodule PotterhatUtils.StatixReporter do
   # Sync status events
   #
 
+  @impl true
   def handle_event([:event_listener, :sync_status, :subscribe_success], _measurements, meta, _config) do
     _ = increment("potterhat.events.sync_status.num_subscribe_success", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :sync_status, :subscribe_failed], _measurements, meta, _config) do
     _ = increment("potterhat.events.sync_status.num_subscribe_failed", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :sync_status, :sync_started], _measurements, meta, _config) do
     _ = increment("potterhat.events.sync_status.num_sync_started", 1, opts(meta))
     _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))
   end
 
+  @impl true
   def handle_event([:event_listener, :sync_status, :sync_stopped], measurements, meta, _config) do
     _ = increment("potterhat.events.sync_status.num_sync_stopped", 1, opts(meta))
     _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))

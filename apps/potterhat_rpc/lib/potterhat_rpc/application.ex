@@ -15,19 +15,11 @@
 defmodule PotterhatRPC.Application do
   @moduledoc false
   use Application
-  require Logger
-  alias PotterhatRPC.EventLogger
+  alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_rpc)
-
-    _ =
-      :telemetry.attach_many(
-        "rpc-logger",
-        EventLogger.supported_events(),
-        &EventLogger.handle_event/4,
-        nil
-      )
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_rpc)
 
     port = Application.get_env(:potterhat_rpc, :rpc_port)
     _ = :telemetry.execute([:rpc, :server, :starting], %{}, %{port: port})
