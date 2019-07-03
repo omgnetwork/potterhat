@@ -45,10 +45,11 @@ defmodule PotterhatNode.MixProject do
     [
       {:deferred_config, "~> 0.1.0"},
       {:ethereumex, "~> 0.5.3"},
-      {:jason, "~> 1.1"},
-      {:websockex, "~> 0.4.0"},
       {:httpoison, "~> 1.4"},
+      {:jason, "~> 1.1"},
+      {:potterhat_utils, in_umbrella: true},
       {:telemetry, "~> 0.4.0"},
+      {:websockex, "~> 0.4.0"},
       # Used for mocking websocket servers
       {:plug_cowboy, "~> 2.0", only: :test}
     ]

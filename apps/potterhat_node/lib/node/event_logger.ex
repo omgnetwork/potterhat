@@ -16,12 +16,11 @@ defmodule PotterhatNode.EventLogger do
   @moduledoc """
   Logs telemetry events emitted by PotterhatNode.
   """
-  require Logger
+  import PotterhatUtils.BaseLogger
 
   @supported_events [
     [:active_nodes, :registered],
     [:active_nodes, :deregistered],
-    [:rpc, :request, :failed_over],
     [:event_listener, :new_head, :subscribe_success],
     [:event_listener, :new_head, :subscribe_failed],
     [:event_listener, :new_head, :head_received],
@@ -137,12 +136,4 @@ defmodule PotterhatNode.EventLogger do
   def handle_event([:event_listener, :sync_status, :sync_stopped], _measurements, meta, _config) do
     debug("Sync stopped.", meta)
   end
-
-  defp debug(message, meta), do: message |> prefix_with(meta) |> Logger.debug()
-  defp info(message, meta), do: message |> prefix_with(meta) |> Logger.info()
-  defp warn(message, meta), do: message |> prefix_with(meta) |> Logger.warn()
-  defp error(message, meta), do: message |> prefix_with(meta) |> Logger.error()
-
-  defp prefix_with(message, %{node_id: _} = meta), do: "#{meta.node_id}: #{message}"
-  defp prefix_with(message, meta), do: message
 end

@@ -22,7 +22,7 @@ defmodule PotterhatNode.Application do
 
     _ =
       :telemetry.attach_many(
-        "logger",
+        "node-logger",
         EventLogger.supported_events(),
         &EventLogger.handle_event/4,
         nil
