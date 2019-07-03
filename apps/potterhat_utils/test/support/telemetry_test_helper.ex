@@ -38,7 +38,7 @@ defmodule PotterhatUtils.TelemetryTestHelper do
   def assert_telemetry(event_name) do
     received =
       receive do
-        {:telemetry_receied, event} -> {:ok, event}
+        {:telemetry_received, event} -> {:ok, event}
       after
         100 -> nil
       end
