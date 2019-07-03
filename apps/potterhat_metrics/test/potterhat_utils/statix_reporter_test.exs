@@ -15,8 +15,8 @@
 defmodule PotterhatMetrics.StatixReporterTest do
   # Async false due to changing log level
   use ExUnit.Case, async: false
-  alias PotterhatMetrics.StatixReporter
   alias Plug.Conn
+  alias PotterhatMetrics.StatixReporter
 
   defmodule MockStatixServer do
     use GenServer
