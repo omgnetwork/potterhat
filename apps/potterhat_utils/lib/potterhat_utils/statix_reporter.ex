@@ -80,7 +80,13 @@ defmodule PotterhatUtils.StatixReporter do
   @impl true
   def handle_event([:rpc, :request, :stop], measurements, meta, _config) do
     eth_method = meta.conn.assigns[:eth_method]
-    _ = timing("potterhat.rpc.response_time", measurements.duration, opts(meta, tags: ["eth_method:#{eth_method}"]))
+
+    _ =
+      timing(
+        "potterhat.rpc.response_time",
+        measurements.duration,
+        opts(meta, tags: ["eth_method:#{eth_method}"])
+      )
   end
 
   @impl true
@@ -98,7 +104,13 @@ defmodule PotterhatUtils.StatixReporter do
   @impl true
   def handle_event([:rpc, :request, :failed_over], _measurements, meta, _config) do
     eth_method = meta.body_params["method"]
-    _ = increment("potterhat.rpc.num_failed_over", 1, opts(meta, tags: ["eth_method:#{eth_method}"]))
+
+    _ =
+      increment(
+        "potterhat.rpc.num_failed_over",
+        1,
+        opts(meta, tags: ["eth_method:#{eth_method}"])
+      )
   end
 
   #
@@ -145,17 +157,32 @@ defmodule PotterhatUtils.StatixReporter do
   #
 
   @impl true
-  def handle_event([:event_listener, :new_pending_transaction, :subscribe_success], _measurements, meta, _config) do
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :subscribe_success],
+        _measurements,
+        meta,
+        _config
+      ) do
     _ = increment("potterhat.events.new_pending_transaction.num_subscribe_success", 1, opts(meta))
   end
 
   @impl true
-  def handle_event([:event_listener, :new_pending_transaction, :subscribe_failed], _measurements, meta, _config) do
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :subscribe_failed],
+        _measurements,
+        meta,
+        _config
+      ) do
     _ = increment("potterhat.events.new_pending_transaction.num_subscribe_failed", 1, opts(meta))
   end
 
   @impl true
-  def handle_event([:event_listener, :new_pending_transaction, :transaction_received], _measurements, meta, _config) do
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :transaction_received],
+        _measurements,
+        meta,
+        _config
+      ) do
     _ = increment("potterhat.events.new_pending_transaction.num_received", 1, opts(meta))
   end
 
@@ -164,12 +191,22 @@ defmodule PotterhatUtils.StatixReporter do
   #
 
   @impl true
-  def handle_event([:event_listener, :sync_status, :subscribe_success], _measurements, meta, _config) do
+  def handle_event(
+        [:event_listener, :sync_status, :subscribe_success],
+        _measurements,
+        meta,
+        _config
+      ) do
     _ = increment("potterhat.events.sync_status.num_subscribe_success", 1, opts(meta))
   end
 
   @impl true
-  def handle_event([:event_listener, :sync_status, :subscribe_failed], _measurements, meta, _config) do
+  def handle_event(
+        [:event_listener, :sync_status, :subscribe_failed],
+        _measurements,
+        meta,
+        _config
+      ) do
     _ = increment("potterhat.events.sync_status.num_subscribe_failed", 1, opts(meta))
   end
 
@@ -183,8 +220,12 @@ defmodule PotterhatUtils.StatixReporter do
   def handle_event([:event_listener, :sync_status, :sync_stopped], measurements, meta, _config) do
     _ = increment("potterhat.events.sync_status.num_sync_stopped", 1, opts(meta))
     _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))
-    _ = gauge("potterhat.events.sync_status.current_block", measurements.current_block, opts(meta))
-    _ = gauge("potterhat.events.sync_status.highest_block", measurements.highest_block, opts(meta))
+
+    _ =
+      gauge("potterhat.events.sync_status.current_block", measurements.current_block, opts(meta))
+
+    _ =
+      gauge("potterhat.events.sync_status.highest_block", measurements.highest_block, opts(meta))
   end
 
   #

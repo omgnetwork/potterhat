@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.NewHead do
   Listens for newHeads events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 1
 
@@ -84,7 +83,7 @@ defmodule PotterhatNode.Listener.NewHead do
   #
 
   # Successful subscription
-  defp do_handle_frame(%{"result" => result}, state) when is_binary(result)  do
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
     meta = %{
       node_id: state[:node_id],
       node_label: state[:node_label]
@@ -120,7 +119,7 @@ defmodule PotterhatNode.Listener.NewHead do
       node_id: state[:node_id],
       node_label: state[:node_label],
       block_number: block_number,
-      block_hash: block_hash,
+      block_hash: block_hash
     }
 
     _ = :telemetry.execute([:event_listener, :new_head, :head_received], %{}, meta)

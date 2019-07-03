@@ -17,9 +17,9 @@ defmodule PotterhatRPC.Router do
   Serves RPC requests.
   """
   use Plug.Router
+  alias Plug.Conn
   alias PotterhatNode.ActiveNodes
   alias PotterhatRPC.{ErrorHandler, EthForwarder}
-  alias Plug.Conn
 
   plug(Plug.Logger)
 
@@ -62,7 +62,7 @@ defmodule PotterhatRPC.Router do
     end
   end
 
-  defp store_eth_method(conn, opts) do
+  defp store_eth_method(conn, _opts) do
     Conn.assign(conn, :eth_method, conn.body_params["method"])
   end
 end

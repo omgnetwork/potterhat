@@ -15,6 +15,7 @@
 defmodule PotterhatNode.LogTest do
   use ExUnit.Case
   import PotterhatNode.EthereumTestHelper
+  import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.Listener.Log
 
   setup do
@@ -36,10 +37,11 @@ defmodule PotterhatNode.LogTest do
     end
   end
 
-  describe "on receving websocket packets" do
-    test "casts back an :event_received message", meta do
+  describe "on receiving websocket packets" do
+    test "emits a telemetry event", meta do
+      listen_telemetry([:event_listener, :log, :subscribe_success])
       {:ok, _} = Log.start_link(meta.websocket_url, [])
-      assert_receive {:"$gen_cast", {:event_received, :logs, _}}
+      assert_telemetry([:event_listener, :log, :subscribe_success])
     end
   end
 end

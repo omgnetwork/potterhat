@@ -18,7 +18,7 @@ defmodule PotterhatNode.Node do
   """
   use GenServer
   require Logger
-  alias PotterhatNode.{ActiveNodes, EventHandler}
+  alias PotterhatNode.ActiveNodes
   alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do

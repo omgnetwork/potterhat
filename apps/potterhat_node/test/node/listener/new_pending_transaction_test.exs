@@ -15,6 +15,7 @@
 defmodule PotterhatNode.NewPendingTransactionTest do
   use ExUnit.Case
   import PotterhatNode.EthereumTestHelper
+  import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.Listener.NewPendingTransaction
 
   setup do
@@ -36,10 +37,11 @@ defmodule PotterhatNode.NewPendingTransactionTest do
     end
   end
 
-  describe "on receving websocket packets" do
-    test "notifies the subsciber", meta do
+  describe "on receiving websocket packets" do
+    test "emits a telemetry event", meta do
+      listen_telemetry([:event_listener, :new_pending_transaction, :subscribe_success])
       {:ok, _} = NewPendingTransaction.start_link(meta.websocket_url, [])
-      assert_receive {:"$gen_cast", {:event_received, :new_pending_transactions, _}}
+      assert_telemetry([:event_listener, :new_pending_transaction, :subscribe_success])
     end
   end
 end

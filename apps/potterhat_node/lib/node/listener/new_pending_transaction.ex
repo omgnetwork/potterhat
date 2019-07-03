@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
   Listens for new pending transaction events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 4
 
@@ -84,13 +83,19 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
   #
 
   # Successful subscription
-  defp do_handle_frame(%{"result" => result}, state) when is_binary(result)  do
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
     meta = %{
       node_id: state[:node_id],
       node_label: state[:node_label]
     }
 
-    _ = :telemetry.execute([:event_listener, :new_pending_transaction, :subscribe_success], %{}, meta)
+    _ =
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :subscribe_success],
+        %{},
+        meta
+      )
+
     state
   end
 
@@ -102,7 +107,13 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
       error: error
     }
 
-    _ = :telemetry.execute([:event_listener, :new_pending_transaction, :subscribe_failed], %{}, meta)
+    _ =
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :subscribe_failed],
+        %{},
+        meta
+      )
+
     state
   end
 
@@ -111,10 +122,16 @@ defmodule PotterhatNode.Listener.NewPendingTransaction do
     meta = %{
       node_id: state[:node_id],
       node_label: state[:node_label],
-      transaction_hash: data["params"]["result"],
+      transaction_hash: data["params"]["result"]
     }
 
-    _ = :telemetry.execute([:event_listener, :new_pending_transaction, :transaction_received], %{}, meta)
+    _ =
+      :telemetry.execute(
+        [:event_listener, :new_pending_transaction, :transaction_received],
+        %{},
+        meta
+      )
+
     state
   end
 end

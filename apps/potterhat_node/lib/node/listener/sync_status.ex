@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.SyncStatus do
   Listens for sync status events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 2
 
@@ -84,7 +83,7 @@ defmodule PotterhatNode.Listener.SyncStatus do
   #
 
   # Successful subscription
-  defp do_handle_frame(%{"result" => result}, state) when is_binary(result)  do
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
     meta = %{
       node_id: state[:node_id],
       node_label: state[:node_label]

@@ -15,6 +15,7 @@
 defmodule PotterhatNode.SyncStatusTest do
   use ExUnit.Case
   import PotterhatNode.EthereumTestHelper
+  import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.Listener.SyncStatus
 
   setup do
@@ -36,10 +37,11 @@ defmodule PotterhatNode.SyncStatusTest do
     end
   end
 
-  describe "on receving websocket packets" do
-    test "notifies the subsciber", meta do
+  describe "on receiving websocket packets" do
+    test "emits a telemetry event", meta do
+      listen_telemetry([:event_listener, :sync_status, :subscribe_success])
       {:ok, _} = SyncStatus.start_link(meta.websocket_url, [])
-      assert_receive {:"$gen_cast", {:event_received, :sync_status, _}}
+      assert_telemetry([:event_listener, :sync_status, :subscribe_success])
     end
   end
 end

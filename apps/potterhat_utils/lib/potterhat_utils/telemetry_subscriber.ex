@@ -20,11 +20,11 @@ defmodule PotterhatUtils.TelemetrySubscriber do
   @callback init() :: :ok
   @callback supported_events() :: [:telemetry.event_name()]
   @callback handle_event(
-    :telemetry.event_name(),
-    :telemetry.event_measurements(),
-    :telemetry.event_metadata(),
-    :telemetry.handler_config()
-  ) :: any()
+              :telemetry.event_name(),
+              :telemetry.event_measurements(),
+              :telemetry.event_metadata(),
+              :telemetry.handler_config()
+            ) :: any()
 
   def attach(id, subscriber) do
     :ok = subscriber.init()

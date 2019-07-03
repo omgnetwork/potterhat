@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.Log do
   Listens for log events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 3
 
@@ -85,7 +84,7 @@ defmodule PotterhatNode.Listener.Log do
   #
 
   # Successful subscription
-  defp do_handle_frame(%{"result" => result}, state) when is_binary(result)  do
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
     meta = %{
       node_id: state[:node_id],
       node_label: state[:node_label]
