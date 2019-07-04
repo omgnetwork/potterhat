@@ -89,8 +89,8 @@ defmodule PotterhatNodeTest do
 
       {res, response} = Node.rpc_request(pid, body, headers)
 
-      refute res == :ok
-      refute %RPCResponse{} = response
+      assert res == :ok
+      assert %RPCResponse{} = response
     end
   end
 end
