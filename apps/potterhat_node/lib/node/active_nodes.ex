@@ -54,6 +54,14 @@ defmodule PotterhatNode.ActiveNodes do
   def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
   @doc """
+  Returns a count of all active nodes.
+  """
+  @spec count() :: non_neg_integer()
+  @spec count(GenServer.server()) :: non_neg_integer()
+  def count(server \\ __MODULE__), do: GenServer.call(server, :count)
+
+
+  @doc """
   Returns the pid of the active node with the highest priority.
   """
   @spec first() :: node_info() | nil
@@ -93,6 +101,12 @@ defmodule PotterhatNode.ActiveNodes do
   @impl true
   def handle_call(:all, _from, nodes) do
     {:reply, nodes, nodes}
+  end
+
+  @doc false
+  @impl true
+  def handle_call(:count, _from, state) do
+    {:reply, length(state), state}
   end
 
   @doc false

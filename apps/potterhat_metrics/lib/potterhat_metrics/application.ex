@@ -20,7 +20,12 @@ defmodule PotterhatMetrics.Application do
   def start(_type, _args) do
     :ok = TelemetrySubscriber.attach_from_config(:potterhat_metrics)
 
+    children = [
+      # Collect and report metrics every minute
+      {PotterhatMetrics.Collector, [interval_ms: 60 * 1000]}
+    ]
+
     opts = [strategy: :one_for_one, name: PotterhatMetrics.Supervisor]
-    Supervisor.start_link([], opts)
+    Supervisor.start_link(children, opts)
   end
 end

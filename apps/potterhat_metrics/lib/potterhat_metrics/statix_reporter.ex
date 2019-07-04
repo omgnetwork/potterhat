@@ -21,6 +21,8 @@ defmodule PotterhatMetrics.StatixReporter do
   @behaviour PotterhatUtils.TelemetrySubscriber
 
   @supported_events [
+    [:periodic_metrics, :active_nodes, :collected],
+    [:periodic_metrics, :configured_nodes, :collected],
     [:active_nodes, :registered],
     [:active_nodes, :deregistered],
     [:rpc, :request, :start],
@@ -50,6 +52,20 @@ defmodule PotterhatMetrics.StatixReporter do
 
   @impl true
   def supported_events, do: @supported_events
+
+  #
+  # Periodic metrics
+  #
+
+  @impl true
+  def handle_event([:periodic_metrics, :active_nodes, :collected], measures, meta, _config) do
+    _ = gauge("potterhat.active_nodes.total_active", measures.total, opts(meta))
+  end
+
+  @impl true
+  def handle_event([:periodic_metrics, :configured_nodes, :collected], measures, meta, _config) do
+    _ = gauge("potterhat.nodes.total_configured", measures.total, opts(meta))
+  end
 
   #
   # Active nodes

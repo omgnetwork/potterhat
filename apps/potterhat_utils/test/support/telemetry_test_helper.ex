@@ -49,6 +49,23 @@ defmodule PotterhatUtils.TelemetryTestHelper do
     end
   end
 
+  def refute_telemetry(event_name) do
+    received =
+      receive do
+        {:telemetry_received, event} -> {:ok, event}
+      after
+        1000 -> nil
+      end
+
+    case received do
+      {:ok, {^event_name, _, _, _}} ->
+        flunk("The telemetry event #{inspect(event_name)} was received, but it was not expected.")
+
+      _ ->
+        assert true == true
+    end
+  end
+
   #
   # Private functions
   #
