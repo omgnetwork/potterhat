@@ -19,6 +19,13 @@ defmodule PotterhatUtils.TelemetryTestHelper do
   import ExUnit.Callbacks
   import ExUnit.Assertions
 
+  @doc """
+  Starts listening to the given telemetry event. Any telemetry event received
+  will be passed back to the current process's mailbox in the following format:
+
+      {:telemetry_received, {event_name, measurements, meta, config}}
+  """
+  @spec listen_telemetry(:telemetry.event_name()) :: :ok
   def listen_telemetry(event_name) do
     handler_id = handler_id(event_name)
 
@@ -35,6 +42,11 @@ defmodule PotterhatUtils.TelemetryTestHelper do
     on_exit(fn -> :telemetry.detach(handler_id) end)
   end
 
+  @doc """
+  Asserts that the given telemetry event has been received since calling `listen_telemetry/2`
+  and until invoking this function.
+  """
+  @spec assert_telemetry(:telemetry.event_name()) :: true | no_return()
   def assert_telemetry(event_name) do
     received =
       receive do
@@ -49,6 +61,11 @@ defmodule PotterhatUtils.TelemetryTestHelper do
     end
   end
 
+  @doc """
+  Asserts that the given telemetry event was not received since calling `listen_telemetry/2`
+  and until invoking this function.
+  """
+  @spec refute_telemetry(:telemetry.event_name()) :: true | no_return()
   def refute_telemetry(event_name) do
     received =
       receive do

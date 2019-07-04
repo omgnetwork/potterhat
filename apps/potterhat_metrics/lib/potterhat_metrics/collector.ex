@@ -26,6 +26,10 @@ defmodule PotterhatMetrics.Collector do
     :configured_nodes
   ]
 
+  @doc """
+  Starts and links a new Collector server.
+  """
+  @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts)
   end
@@ -36,21 +40,24 @@ defmodule PotterhatMetrics.Collector do
   @spec collect(GenServer.server()) :: any()
   def collect(server), do: Process.send(server, :collect, [])
 
+  @doc false
+  @spec init(Keyword.t()) :: {:ok, %{:interval_ms => non_neg_integer()}}
   def init(opts) do
     state = %{
       interval_ms: Keyword.fetch!(opts, :interval_ms)
     }
 
     # The interval might be long. Don't wait to start reporting, do it the next second.
-    if state.interval_ms > 0, do: schedule_work(1000)
+    _ = if state.interval_ms > 0, do: schedule_work(1000)
 
     {:ok, state}
   end
 
+  @doc false
   def handle_info(:collect, state) do
     _ = Enum.each(@enabled, &report/1)
 
-    if state.interval_ms > 0, do: schedule_work(state.interval_ms)
+    _ = if state.interval_ms > 0, do: schedule_work(state.interval_ms)
     {:noreply, state}
   end
 
