@@ -34,9 +34,9 @@ defmodule PotterhatRPC.ErrorHandler do
     request_id = Map.get(conn.body_params, "id")
 
     error =
-      case Map.has_key?(@errors, code) do
-        true -> Map.get(@errors, code)
-        false -> Map.get(@errors, :internal_error)
+      case Map.get(@errors, code) do
+        nil -> Map.get(@errors, :internal_error)
+        e -> e
       end
 
     payload =
