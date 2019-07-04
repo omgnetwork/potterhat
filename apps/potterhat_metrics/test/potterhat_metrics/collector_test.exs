@@ -36,7 +36,7 @@ defmodule PotterhatMetrics.CollectorTest do
       listen_telemetry([:periodic_metrics, :configured_nodes, :collected])
 
       # Set interval to 1 hour so it doesn't intefere with this test
-      {:ok, pid} = GenServer.start_link(Collector, [interval_ms: 60 * 60 * 1000])
+      {:ok, pid} = GenServer.start_link(Collector, interval_ms: 60 * 60 * 1000)
       :ok = Process.sleep(1000)
 
       assert_telemetry([:periodic_metrics, :active_nodes, :collected])
@@ -48,7 +48,7 @@ defmodule PotterhatMetrics.CollectorTest do
       listen_telemetry([:periodic_metrics, :active_nodes, :collected])
       listen_telemetry([:periodic_metrics, :configured_nodes, :collected])
 
-      {:ok, pid} = GenServer.start_link(Collector, [interval_ms: 0])
+      {:ok, pid} = GenServer.start_link(Collector, interval_ms: 0)
       :ok = Process.sleep(1000)
 
       refute_telemetry([:periodic_metrics, :active_nodes, :collected])
@@ -63,7 +63,7 @@ defmodule PotterhatMetrics.CollectorTest do
       refute_telemetry([:periodic_metrics, :active_nodes, :collected])
 
       # Disable the interval so we could manually trigger the collection.
-      {:ok, pid} = GenServer.start_link(Collector, [interval_ms: 0])
+      {:ok, pid} = GenServer.start_link(Collector, interval_ms: 0)
       :ok = Collector.collect(pid)
 
       assert_telemetry([:periodic_metrics, :active_nodes, :collected])
@@ -75,7 +75,7 @@ defmodule PotterhatMetrics.CollectorTest do
       refute_telemetry([:periodic_metrics, :configured_nodes, :collected])
 
       # Disable the interval so we could manually trigger the collection.
-      {:ok, pid} = GenServer.start_link(Collector, [interval_ms: 0])
+      {:ok, pid} = GenServer.start_link(Collector, interval_ms: 0)
       :ok = Collector.collect(pid)
 
       assert_telemetry([:periodic_metrics, :configured_nodes, :collected])

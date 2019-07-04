@@ -235,11 +235,9 @@ defmodule PotterhatMetrics.StatixReporter do
     _ = increment("potterhat.events.sync_status.num_sync_stopped", 1, opts(meta))
     _ = increment("potterhat.events.sync_status.num_received", 1, opts(meta))
 
-    _ =
-      gauge("potterhat.events.sync_status.current_block", measures.current_block, opts(meta))
+    _ = gauge("potterhat.events.sync_status.current_block", measures.current_block, opts(meta))
 
-    _ =
-      gauge("potterhat.events.sync_status.highest_block", measures.highest_block, opts(meta))
+    _ = gauge("potterhat.events.sync_status.highest_block", measures.highest_block, opts(meta))
   end
 
   #

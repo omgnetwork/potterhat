@@ -60,7 +60,6 @@ defmodule PotterhatNode.ActiveNodes do
   @spec count(GenServer.server()) :: non_neg_integer()
   def count(server \\ __MODULE__), do: GenServer.call(server, :count)
 
-
   @doc """
   Returns the pid of the active node with the highest priority.
   """
