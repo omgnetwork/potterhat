@@ -18,6 +18,8 @@ defmodule PotterhatMetrics.StatixReporterTest do
   alias Plug.Conn
   alias PotterhatMetrics.StatixReporter
 
+  # MockStatixServer is derived from StatixTest.Server licensed under ISC License
+  # See: https://github.com/lexmag/statix/blob/master/test/statix_test.exs
   defmodule MockStatixServer do
     use GenServer
 
@@ -98,9 +100,6 @@ defmodule PotterhatMetrics.StatixReporterTest do
 
       assert_receive {:statix_event,
                       'potterhat.active_nodes.num_registered:1|c|#node_id:some_node_id'}
-
-      assert_receive {:statix_event,
-                      'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:active_nodes, :deregistered]" do
@@ -109,9 +108,6 @@ defmodule PotterhatMetrics.StatixReporterTest do
 
       assert_receive {:statix_event,
                       'potterhat.active_nodes.num_deregistered:1|c|#node_id:some_node_id'}
-
-      assert_receive {:statix_event,
-                      'potterhat.active_nodes.total_active:10|g|#node_id:some_node_id'}
     end
 
     test "sends metrics for [:rpc, :request, :start]" do
