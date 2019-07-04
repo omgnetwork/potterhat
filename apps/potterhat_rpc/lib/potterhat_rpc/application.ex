@@ -17,16 +17,10 @@ defmodule PotterhatRPC.Application do
   use Application
   require Logger
 
-  @port 8545
-
   def start(_type, _args) do
-    port =
-      case System.get_env("RPC_PORT") do
-        nil -> @port
-        "" -> @port
-        port -> String.to_integer(port)
-      end
+    _ = DeferredConfig.populate(:potterhat_rpc)
 
+    port = Application.get_env(:potterhat_rpc, :rpc_port)
     _ = Logger.info("Starting RPC server on port #{port}")
 
     children = [
