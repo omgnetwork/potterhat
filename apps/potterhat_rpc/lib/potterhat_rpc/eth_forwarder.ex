@@ -40,7 +40,7 @@ defmodule PotterhatRPC.EthForwarder do
 
           _ ->
             _ = Logger.error("Retrying the request with the next available node.")
-            __MODULE__.forward(body_params, header_params, opts)
+            forward(body_params, header_params, opts)
         end
     end
   end
