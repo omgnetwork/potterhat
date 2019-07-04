@@ -17,7 +17,8 @@ executors:
     docker:
       - image: omisegoimages/ewallet-deploy:stable
     working_directory: ~/src
-
+    environment:
+      IMAGE_NAME: "omisego/potterhat"
 
 commands:
   setup_workspace:
