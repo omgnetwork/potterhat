@@ -56,7 +56,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
       envs = %{
         id: "node_id_1",
         label: "Node 1",
-        client: "geth",
+        client_type: "geth",
         rpc: "http://localhost:8545",
         ws: "ws://localhost:8546",
         priority: "1"
@@ -69,7 +69,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
       config = EnvConfigProvider.get_configs() |> hd()
       assert config.id == envs.id |> String.to_atom()
       assert config.label == envs.label
-      assert config.client == envs.client
+      assert config.client_type == envs.client_type
       assert config.rpc == envs.rpc
       assert config.ws == envs.ws
       assert config.priority == envs.priority |> String.to_integer()
@@ -79,7 +79,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
       envs = %{
         id: "node_id_1",
         label: "Node 1",
-        client: "geth",
+        client_type: "geth",
         rpc: "http://localhost:8545",
         ws: "ws://localhost:8546",
         priority: "1"
@@ -95,7 +95,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
   defp set_envs(config, index) do
     :ok = System.put_env("POTTERHAT_NODE_#{index}_ID", Map.fetch!(config, :id))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_LABEL", Map.fetch!(config, :label))
-    :ok = System.put_env("POTTERHAT_NODE_#{index}_CLIENT", Map.fetch!(config, :client))
+    :ok = System.put_env("POTTERHAT_NODE_#{index}_CLIENT_TYPE", Map.fetch!(config, :client_type))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_RPC", Map.fetch!(config, :rpc))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_WS", Map.fetch!(config, :ws))
     :ok = System.put_env("POTTERHAT_NODE_#{index}_PRIORITY", Map.fetch!(config, :priority))
@@ -108,7 +108,7 @@ defmodule PotterhatNode.EnvConfigProviderTest do
       envs = %{
         id: "node_id_1",
         label: "Node 1",
-        client: "geth",
+        client_type: "geth",
         rpc: "http://localhost:8545",
         ws: "ws://localhost:8546",
         priority: "1"

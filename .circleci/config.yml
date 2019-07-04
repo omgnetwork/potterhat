@@ -1,0 +1,145 @@
+version: 2.1
+
+
+executors:
+  metal:
+    machine:
+      image: ubuntu-1604:201903-01
+    environment:
+      IMAGE_NAME: "omisego/potterhat"
+
+  builder:
+    docker:
+      - image: omisegoimages/ewallet-builder:stable
+    working_directory: ~/src
+
+  deploy:
+    docker:
+      - image: omisegoimages/ewallet-deploy:stable
+    working_directory: ~/src
+
+
+commands:
+  setup_workspace:
+    description: "Setup workspace"
+    steps:
+      - attach_workspace:
+          name: Attach workspace
+          at: ~/
+
+jobs:
+  build:
+    executor: builder
+    steps:
+      - checkout
+      - run: |
+          mkdir -p ~/var
+          elixir --version | tee ~/var/elixir-version
+      - run: make build-test
+      - persist_to_workspace:
+          name: Persist workspace
+          root: ~/
+          paths:
+            - var/
+            - src/deps
+            - src/_build
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  lint:
+    executor: builder
+    steps:
+      - checkout
+      - setup_workspace
+      - run: make check-format
+      - run: make check-credo
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  dialyze:
+    executor: builder
+    steps:
+      - checkout
+      - setup_workspace
+      - restore_cache:
+          name: Restore runtime PLT from cache
+          keys:
+            - v1-potterhat-plt-{{ checksum "~/var/elixir-version" }}-{{ checksum "mix.lock" }}
+            - v1-potterhat-plt-{{ checksum "~/var/elixir-version" }}-
+            - v1-potterhat-plt-
+      - run: |
+          export PLT_CORE_PATH=$HOME/var/dialyzer
+          mkdir -p $PLT_CORE_PATH
+          make check-dialyzer
+      - save_cache:
+          name: Cache runtime PLT
+          key: v1-potterhat-plt-{{ checksum "~/var/elixir-version" }}-{{ checksum "mix.lock" }}
+          paths:
+            - ~/var/dialyzer
+          when: always
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  test:
+    executor: builder
+    steps:
+      - checkout
+      - setup_workspace
+      - run: make test
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  publish:
+    executor: metal
+    steps:
+      - checkout
+      - run: sh update-versions.sh -a
+      - run: make docker IMAGE_NAME=$IMAGE_NAME
+      - run: sh .circleci/ci_publish.sh
+      - run: sh .circleci/ci_slack.sh success
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+  deploy:
+    executor: deploy
+    steps:
+      - checkout
+      - run: sh .circleci/ci_deploy.sh
+      - run: sh .circleci/ci_slack.sh deploy
+      - run:
+          command: sh .circleci/ci_slack.sh failure
+          when: on_fail
+
+
+workflows:
+  build_deploy:
+    jobs:
+      - build:
+          filters: &all_branches
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - lint:
+          requires: [build]
+          filters: *all_branches
+      - dialyze:
+          requires: [build]
+          filters: *all_branches
+      - test:
+          requires: [build]
+          filters: *all_branches
+      - publish:
+          requires: [lint, test, dialyze]
+          filters: *all_branches
+      - deploy:
+          requires: [build]
+          filters:
+            branches:
+              only:
+                - master

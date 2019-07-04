@@ -27,7 +27,7 @@ defmodule PotterhatNode.MockEthereumNode.WebSocket do
         {:cowboy_websocket, req, state}
 
       int when is_integer(int) ->
-        :cowboy_req.reply(int, req)
+        _ = :cowboy_req.reply(int, req)
         {:shutdown, req, :tests_are_fun}
 
       :connection_wait ->
@@ -161,6 +161,7 @@ defmodule PotterhatNode.MockEthereumNode.WebSocket do
 
   def websocket_info(_, state), do: {:ok, state}
 
+  @dialyzer {:nowarn_function, immediate_reply: 1}
   defp immediate_reply(req) do
     socket = elem(req, 1)
     transport = elem(req, 2)
