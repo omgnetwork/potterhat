@@ -139,7 +139,7 @@ workflows:
           requires: [lint, test, dialyze]
           filters: *all_branches
       - deploy:
-          requires: [build]
+          requires: [publish]
           filters:
             branches:
               only:
