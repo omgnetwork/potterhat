@@ -54,6 +54,11 @@ s6-env HOME=/app
 ##
 s6-env REPLACE_OS_VARS=yes
 
+## Known commands
+##
+ifelse { test $1 == "foreground" } { /app/bin/potterhat $@ }
+ifelse { test $1 == "console" } { /app/bin/potterhat $@ }
+
 ## Fallback; if we're not running the known command, just run it as is.
 ## This is to allow e.g. administrator attaching a shell into the container.
 ##
