@@ -23,25 +23,27 @@ defmodule PotterhatRPC.EthForwarder do
           {:ok, %PotterhatNode.Node.RPCResponse{}} | {:error, :no_nodes_available}
   def forward(body_params, header_params, opts \\ []) do
     node_registry = Keyword.get(opts, :node_registry, ActiveNodes)
-    node_id = ActiveNodes.first(node_registry)
+    nodes = ActiveNodes.all(node_registry)
 
-    case Node.rpc_request(node_id, body_params, header_params) do
+    do_forward(nodes, body_params, header_params)
+  end
+
+  defp do_forward([{pid, _priority, label} | remaining], body_params, header_params) do
+    _ = Logger.debug("Trying to serve the request from #{label}.")
+
+    case Node.rpc_request(pid, body_params, header_params) do
       {:ok, response} ->
-        _ = Logger.debug("Serving the RPC request from #{Node.get_label(node_id)}.")
+        _ = Logger.info("Served the RPC request from #{label}.")
         {:ok, response}
 
       {:error, error} ->
-        :ok = ActiveNodes.deregister(node_registry, node_id)
-        _ = Logger.error("Failed to serve the RPC request: #{inspect(error)}.")
-
-        case ActiveNodes.first(node_registry) do
-          nil ->
-            {:error, :no_nodes_available}
-
-          _ ->
-            _ = Logger.error("Retrying the request with the next available node.")
-            forward(body_params, header_params, opts)
-        end
+        _ = Logger.error("Failed to serve the RPC request from #{label}: #{inspect(error)}.")
+        do_forward(remaining, body_params, header_params)
     end
+  end
+
+  defp do_forward([], _, _) do
+    _ = Logger.warn("Exhausted all nodes to serve the RPC request from.")
+    {:error, :no_nodes_available}
   end
 end

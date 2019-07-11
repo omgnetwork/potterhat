@@ -26,11 +26,14 @@ defmodule PotterhatRPC.EthForwarderTest do
   setup do
     {:ok, node_registry} = prepare_node_registry()
 
-    {:ok, pid_1} = prepare_mock_node(node_registry: node_registry, priority: 10)
-    {:ok, pid_2} = prepare_mock_node(node_registry: node_registry, priority: 20)
+    {:ok, pid_1} = prepare_mock_node(node_registry: node_registry, priority: 10, label: "Node 1")
+    {:ok, pid_2} = prepare_mock_node(node_registry: node_registry, priority: 20, label: "Node 2")
 
-    # The nodes take some time to intialize, so we wait for 100ms.
+    # The nodes take some time to intialize, so we wait for 200ms.
     _ = Process.sleep(200)
+
+    log_level = Logger.level()
+    on_exit(fn -> Logger.configure(level: log_level) end)
 
     {:ok,
      %{
@@ -50,9 +53,9 @@ defmodule PotterhatRPC.EthForwarderTest do
 
     config = %PotterhatNode.NodeConfig{
       id: String.to_atom("test_eth_forwarder_#{:rand.uniform(999_999_999)}"),
-      label: "A mock node for EthForwarderTest",
+      label: opts[:label] || "A mock node for EthForwarderTest",
       client_type: :geth,
-      rpc: rpc_url,
+      rpc: opts[:rpc_url] || rpc_url,
       ws: websocket_url,
       priority: Keyword.get(opts, :priority, 100),
       node_registry: node_registry
@@ -90,8 +93,16 @@ defmodule PotterhatRPC.EthForwarderTest do
       assert response["result"] == "PotterhatMockEthereumNode"
     end
 
-    test "deregisters and falls back to the next active node when the first one fails", meta do
-      assert length(ActiveNodes.all(meta.node_registry)) == 2
+    test "deregisters and falls back to the next active node when the first one fails" do
+      # Prepares the node registry so the first in priority will fail the RPC request.
+      {:ok, node_registry} = prepare_node_registry()
+      {:ok, _} = prepare_mock_node(node_registry: node_registry, priority: 10, label: "Node 1", rpc_url: "http://non_existent_rpc:8545")
+      {:ok, _} = prepare_mock_node(node_registry: node_registry, priority: 20, label: "Node 2")
+
+      # The nodes take some time to intialize, so we wait for 200ms.
+      _ = Process.sleep(200)
+
+      # Prepares the request
       header_params = %{"content-type" => "application/json"}
 
       body_params = %{
@@ -101,8 +112,8 @@ defmodule PotterhatRPC.EthForwarderTest do
         "id" => :rand.uniform(999)
       }
 
-      opts = [node_registry: meta.node_registry]
-      true = Process.exit(List.first(meta.nodes), :normal)
+      :ok = Logger.configure(level: :debug)
+      opts = [node_registry: node_registry]
 
       log =
         capture_log(fn ->
@@ -113,9 +124,9 @@ defmodule PotterhatRPC.EthForwarderTest do
           assert response["result"] == "PotterhatMockEthereumNode"
         end)
 
-      assert log =~ "Failed to serve the RPC request"
-      assert log =~ "Retrying the request with the next available node"
-      assert length(ActiveNodes.all(meta.node_registry)) == 1
+      assert log =~ "Trying to serve the request from Node 1"
+      assert log =~ "Failed to serve the RPC request from Node 1"
+      assert log =~ "Trying to serve the request from Node 2"
     end
 
     test "returns :no_nodes_available and logs an error when no active nodes are available" do
@@ -137,7 +148,7 @@ defmodule PotterhatRPC.EthForwarderTest do
           assert {:error, :no_nodes_available} == result
         end)
 
-      assert log =~ "Failed to serve the RPC request"
+      assert log =~ "Exhausted all nodes"
     end
   end
 end

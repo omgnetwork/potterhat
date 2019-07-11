@@ -19,6 +19,8 @@ defmodule PotterhatNode.ActiveNodes do
   use GenServer
   require Logger
 
+  @type node_info() :: {node :: pid(), priority :: integer(), label :: String.t()}
+
   @doc """
   Starts a new instance of `ActiveNodes`.
   """
@@ -47,24 +49,24 @@ defmodule PotterhatNode.ActiveNodes do
   @doc """
   Returns a list of pids of all active nodes.
   """
-  @spec all() :: [pid()]
-  @spec all(GenServer.server()) :: [pid()]
+  @spec all() :: [node_info()]
+  @spec all(GenServer.server()) :: [node_info()]
   def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
   @doc """
   Returns the pid of the active node with the highest priority.
   """
-  @spec first() :: pid() | nil
-  @spec first(GenServer.server()) :: pid() | nil
+  @spec first() :: node_info() | nil
+  @spec first(GenServer.server()) :: node_info() | nil
   def first(server \\ __MODULE__), do: GenServer.call(server, :first)
 
   @doc """
   Registers an active node sorted against existing active nodes by its priority.
   """
-  @spec register(pid(), integer()) :: :ok
-  @spec register(GenServer.server(), pid(), integer()) :: :ok
-  def register(server \\ __MODULE__, pid, priority) do
-    GenServer.call(server, {:register, pid, priority})
+  @spec register(pid(), integer(), String.t()) :: :ok
+  @spec register(GenServer.server(), pid(), integer(), String.t()) :: :ok
+  def register(server \\ __MODULE__, pid, priority, label) do
+    GenServer.call(server, {:register, pid, priority, label})
   end
 
   @doc """
@@ -83,47 +85,40 @@ defmodule PotterhatNode.ActiveNodes do
   @doc false
   @impl true
   def init(_opts) do
-    state = []
-    {:ok, state}
+    # The state is a list of node information
+    {:ok, []}
   end
 
   @doc false
   @impl true
-  def handle_call(:all, _from, state) do
-    pids = Enum.map(state, fn {pid, _priority} -> pid end)
-    {:reply, pids, state}
+  def handle_call(:all, _from, nodes) do
+    {:reply, nodes, nodes}
   end
 
   @doc false
   @impl true
-  def handle_call(:first, _from, state) do
-    first =
-      case state do
-        [] -> nil
-        [pids | _] -> elem(pids, 0)
-      end
-
-    {:reply, first, state}
+  def handle_call(:first, _from, nodes) do
+    {:reply, List.first(nodes), nodes}
   end
 
   @doc false
   @impl true
-  def handle_call({:register, pid, priority}, _from, pids) do
-    prepended = [{pid, priority} | pids]
-    pids = Enum.sort_by(prepended, fn {_pid, priority} -> priority end)
+  def handle_call({:register, pid, priority, label}, _from, nodes) do
+    prepended = [{pid, priority, label} | nodes]
+    nodes = Enum.sort_by(prepended, fn {_, priority, _} -> priority end)
 
-    _ = Logger.debug("Registered node: #{inspect(pid)}. Active nodes: #{length(pids)}.")
-    {:reply, :ok, pids}
+    _ = Logger.debug("Registered node: #{inspect(pid)}. Active nodes: #{length(nodes)}.")
+    {:reply, :ok, nodes}
   end
 
   @doc false
   @impl true
-  def handle_call({:deregister, pid_to_delete}, _from, pids) do
-    pids = Enum.reject(pids, fn {pid, _priority} -> pid == pid_to_delete end)
+  def handle_call({:deregister, pid_to_delete}, _from, nodes) do
+    nodes = Enum.reject(nodes, fn {pid, _priority, _label} -> pid == pid_to_delete end)
 
     _ =
-      Logger.debug("Deregistered node: #{inspect(pid_to_delete)}. Active nodes: #{length(pids)}.")
+      Logger.debug("Deregistered node: #{inspect(pid_to_delete)}. Active nodes: #{length(nodes)}.")
 
-    {:reply, :ok, pids}
+    {:reply, :ok, nodes}
   end
 end

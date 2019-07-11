@@ -94,8 +94,12 @@ defmodule PotterhatNode.Node do
       {:ok, pid} ->
         _ = Logger.info("#{state.label} (#{inspect(self())}): Connected.")
 
-        {:noreply, %{state | state: :registering, event_listener: pid},
-         {:continue, :register_with_manager}}
+        _ = case state.node_registry do
+          nil -> :ok
+          registry -> ActiveNodes.register(registry, self(), state.priority, state.label)
+        end
+
+        {:noreply, %{state | state: :started, event_listener: pid}}
 
       {:error, error} ->
         retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
@@ -112,20 +116,9 @@ defmodule PotterhatNode.Node do
     end
   end
 
-  @impl true
-  def handle_continue(:register_with_manager, state) do
-    _ =
-      case state.node_registry do
-        nil -> :noop
-        registry -> ActiveNodes.register(registry, self(), state.priority)
-      end
-
-    {:noreply, %{state | state: :started}}
-  end
-
   # Handles termination of the event listener
   @impl true
-  def handle_info({:EXIT, pid, reason}, %{event_listener_listener: pid} = state) do
+  def handle_info({:EXIT, pid, reason}, %{event_listener: pid} = state) do
     _ =
       Logger.info(
         "#{state.label} (#{inspect(self())}: Event listener terminated with reason: #{
@@ -133,13 +126,12 @@ defmodule PotterhatNode.Node do
         }"
       )
 
-    _ =
-      case state.node_registry do
-        nil -> :noop
-        registry -> ActiveNodes.deregister(registry, self())
-      end
+    _ = case state.node_registry do
+      nil -> :ok
+      registry -> ActiveNodes.deregister(registry, self())
+    end
 
-    {:noreply, %{state | state: :restarting}, {:continue, :listen}}
+    {:noreply, %{state | event_listener: nil, state: :restarting}, {:continue, :listen}}
   end
 
   # Ignore any other dying child if it is not the listener
@@ -181,6 +173,15 @@ defmodule PotterhatNode.Node do
         {:reply, {:ok, response}, state}
 
       {:error, _} = error ->
+        # Attempt to stop the listener if an RPC error occurs.
+        # There may be some cases where the listener already detected an error
+        # and has just been stopped. So we need to handle annd ignore those :noproc exits.
+        try do
+          :ok = GenServer.stop(state.event_listener, :rpc_error)
+        catch
+          :exit, {:noproc, _} -> :ok
+        end
+
         {:reply, error, state}
     end
   end
@@ -188,7 +189,6 @@ defmodule PotterhatNode.Node do
   @impl true
   def handle_cast({:event_received, event, message}, state) do
     _ = EventLogger.log_event({event, message}, label: state.label, pid: self())
-
     {:noreply, state}
   end
 end

@@ -38,10 +38,14 @@ defmodule PotterhatNode.ActiveNodesTest do
       {:ok, node_pid_1} = Agent.start(fn -> nil end)
       {:ok, node_pid_2} = Agent.start(fn -> nil end)
 
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10, "Node 1")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20, "Node 2")
 
-      assert [node_pid_1, node_pid_2] = ActiveNodes.all(meta.active_nodes_pid)
+      result = ActiveNodes.all(meta.active_nodes_pid)
+
+      assert length(result) == 2
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_1 end)
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_2 end)
     end
   end
 
@@ -51,11 +55,11 @@ defmodule PotterhatNode.ActiveNodesTest do
       {:ok, node_pid_2} = Agent.start(fn -> nil end)
       {:ok, node_pid_3} = Agent.start(fn -> nil end)
 
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20, "Node 2")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10, "Node 1")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30, "Node 3")
 
-      assert ActiveNodes.first(meta.active_nodes_pid) == node_pid_1
+      assert {node_pid_1, 10, "Node 1"} = ActiveNodes.first(meta.active_nodes_pid)
     end
 
     test "returns nil if there are no active nodes", meta do
@@ -66,9 +70,9 @@ defmodule PotterhatNode.ActiveNodesTest do
   describe "register/3" do
     test "adds the given node to the registry", meta do
       {:ok, node_pid} = Agent.start(fn -> nil end)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid, 10)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid, 10, "Node 1")
 
-      assert [node_pid] = ActiveNodes.all(meta.active_nodes_pid)
+      assert [{node_pid, 10, "Node 1"}] = ActiveNodes.all(meta.active_nodes_pid)
     end
 
     test "sorts the nodes by their priorities", meta do
@@ -76,11 +80,16 @@ defmodule PotterhatNode.ActiveNodesTest do
       {:ok, node_pid_2} = Agent.start(fn -> nil end)
       {:ok, node_pid_3} = Agent.start(fn -> nil end)
 
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20, "Node 1")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10, "Node 2")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30, "Node 3")
 
-      assert [node_pid_1, node_pid_2, node_pid_3] = ActiveNodes.all(meta.active_nodes_pid)
+      result = ActiveNodes.all(meta.active_nodes_pid)
+
+      assert length(result) == 3
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_1 end)
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_2 end)
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_3 end)
     end
   end
 
@@ -90,12 +99,18 @@ defmodule PotterhatNode.ActiveNodesTest do
       {:ok, node_pid_2} = Agent.start(fn -> nil end)
       {:ok, node_pid_3} = Agent.start(fn -> nil end)
 
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10, "Node 1")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20, "Node 2")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_3, 30, "Node 3")
 
       assert ActiveNodes.deregister(meta.active_nodes_pid, node_pid_2) == :ok
-      assert [node_pid_1, node_pid_3] = ActiveNodes.all(meta.active_nodes_pid)
+
+      result = ActiveNodes.all(meta.active_nodes_pid)
+
+      assert length(result) == 2
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_1 end)
+      refute Enum.any?(result, fn {pid, _, _} -> pid == node_pid_2 end)
+      assert Enum.any?(result, fn {pid, _, _} -> pid == node_pid_3 end)
     end
   end
 end
