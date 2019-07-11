@@ -94,10 +94,11 @@ defmodule PotterhatNode.Node do
       {:ok, pid} ->
         _ = Logger.info("#{state.label} (#{inspect(self())}): Connected.")
 
-        _ = case state.node_registry do
-          nil -> :ok
-          registry -> ActiveNodes.register(registry, self(), state.priority, state.label)
-        end
+        _ =
+          case state.node_registry do
+            nil -> :ok
+            registry -> ActiveNodes.register(registry, self(), state.priority, state.label)
+          end
 
         {:noreply, %{state | state: :started, event_listener: pid}}
 
@@ -126,10 +127,11 @@ defmodule PotterhatNode.Node do
         }"
       )
 
-    _ = case state.node_registry do
-      nil -> :ok
-      registry -> ActiveNodes.deregister(registry, self())
-    end
+    _ =
+      case state.node_registry do
+        nil -> :ok
+        registry -> ActiveNodes.deregister(registry, self())
+      end
 
     {:noreply, %{state | event_listener: nil, state: :restarting}, {:continue, :listen}}
   end

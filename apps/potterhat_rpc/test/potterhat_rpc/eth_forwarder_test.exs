@@ -96,7 +96,15 @@ defmodule PotterhatRPC.EthForwarderTest do
     test "deregisters and falls back to the next active node when the first one fails" do
       # Prepares the node registry so the first in priority will fail the RPC request.
       {:ok, node_registry} = prepare_node_registry()
-      {:ok, _} = prepare_mock_node(node_registry: node_registry, priority: 10, label: "Node 1", rpc_url: "http://non_existent_rpc:8545")
+
+      {:ok, _} =
+        prepare_mock_node(
+          node_registry: node_registry,
+          priority: 10,
+          label: "Node 1",
+          rpc_url: "http://non_existent_rpc:8545"
+        )
+
       {:ok, _} = prepare_mock_node(node_registry: node_registry, priority: 20, label: "Node 2")
 
       # The nodes take some time to intialize, so we wait for 200ms.

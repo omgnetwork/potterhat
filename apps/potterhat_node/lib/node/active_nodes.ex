@@ -117,7 +117,9 @@ defmodule PotterhatNode.ActiveNodes do
     nodes = Enum.reject(nodes, fn {pid, _priority, _label} -> pid == pid_to_delete end)
 
     _ =
-      Logger.debug("Deregistered node: #{inspect(pid_to_delete)}. Active nodes: #{length(nodes)}.")
+      Logger.debug(
+        "Deregistered node: #{inspect(pid_to_delete)}. Active nodes: #{length(nodes)}."
+      )
 
     {:reply, :ok, nodes}
   end
