@@ -58,8 +58,8 @@ defmodule PotterhatNode.ActiveNodesTest do
       {:ok, node_pid_1} = Agent.start(fn -> nil end)
       {:ok, node_pid_2} = Agent.start(fn -> nil end)
 
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10)
-      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20)
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_1, 10, "Node 1")
+      :ok = ActiveNodes.register(meta.active_nodes_pid, node_pid_2, 20, "Node 2")
 
       assert ActiveNodes.count(meta.active_nodes_pid) == 2
     end
