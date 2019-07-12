@@ -37,7 +37,7 @@ defmodule PotterhatMetrics.Collector do
   @doc """
   Manually triggers a collection.
   """
-  @spec collect(GenServer.server()) :: any()
+  @spec collect(GenServer.server()) :: :ok
   def collect(server), do: Process.send(server, :collect, [])
 
   @doc false
@@ -47,20 +47,25 @@ defmodule PotterhatMetrics.Collector do
       interval_ms: Keyword.fetch!(opts, :interval_ms)
     }
 
+    _ = if state.interval_ms > 0, do: Process.send(self(), :collect_and_schedule, [])
+
     {:ok, state}
   end
 
   @doc false
   def handle_info(:collect, state) do
-    _ = Enum.each(@enabled, &report/1)
-
-    _ = if state.interval_ms > 0, do: schedule_work(state.interval_ms)
+    :ok = collect()
     {:noreply, state}
   end
 
-  defp schedule_work(delay) do
-    Process.send_after(self(), :collect, delay)
+  @doc false
+  def handle_info(:collect_and_schedule, state) do
+    :ok = collect()
+    _ = Process.send_after(self(), :collect_and_schedule, state.interval_ms)
+    {:noreply, state}
   end
+
+  defp collect, do: Enum.each(@enabled, &report/1)
 
   defp report(:active_nodes) do
     count = ActiveNodes.count()

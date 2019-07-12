@@ -22,10 +22,10 @@ defmodule PotterhatMetrics.Application do
     _ = DeferredConfig.populate(:statix)
 
     :ok = TelemetrySubscriber.attach_from_config(:potterhat_metrics)
+    interval_ms = Application.get_env(:potterhat_metrics, :interval_ms)
 
     children = [
-      # Collect and report metrics every minute
-      {PotterhatMetrics.Collector, [interval_ms: 60 * 1000]}
+      {PotterhatMetrics.Collector, [interval_ms: interval_ms]}
     ]
 
     opts = [strategy: :one_for_one, name: PotterhatMetrics.Supervisor]

@@ -31,7 +31,12 @@ defmodule PotterhatMetrics.CollectorTest do
   end
 
   describe "start_link/2" do
-    test "emits telemetry events after a second" do
+    test "returns a pid" do
+      {:ok, pid} = GenServer.start_link(Collector, interval_ms: 60 * 60 * 1000)
+      assert is_pid(pid)
+    end
+
+    test "emits telemetry events after start" do
       listen_telemetry([:periodic_metrics, :active_nodes, :collected])
       listen_telemetry([:periodic_metrics, :configured_nodes, :collected])
 

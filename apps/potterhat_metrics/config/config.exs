@@ -1,6 +1,7 @@
 use Mix.Config
 
 config :potterhat_metrics,
+  interval_ms: {:system, "POTTERHAT_METRICS_INTERVAL", 10_000, {String, :to_integer}},
   telemetry_subscribers: %{
     "statix-reporter" => PotterhatMetrics.StatixReporter
   }
