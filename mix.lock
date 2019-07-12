@@ -33,5 +33,6 @@
   "statix": {:hex, :statix, "1.2.0", "0d12a38ed37fee6fb8aa20f7e6ae364208aa977286ddb874a77b751cc6a5b357", [:mix], [], "hexpm"},
   "telemetry": {:hex, :telemetry, "0.4.0", "8339bee3fa8b91cb84d14c2935f8ecf399ccd87301ad6da6b71c09553834b2ab", [:rebar3], [], "hexpm"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.4.1", "d869e4c68901dd9531385bb0c8c40444ebf624e60b6962d95952775cac5e90cd", [:rebar3], [], "hexpm"},
+  "vmstats": {:hex, :vmstats, "2.3.1", "fa719deb51c53672955cbf0e131cfe85be51732c700d2b58232157ac0478bf4a", [:rebar3], [], "hexpm"},
   "websockex": {:hex, :websockex, "0.4.2", "9a3b7dc25655517ecd3f8ff7109a77fce94956096b942836cdcfbc7c86603ecc", [:mix], [], "hexpm"},
 }

@@ -11,4 +11,8 @@ config :statix,
   host: {:system, "POTTERHAT_STATSD_HOST", "127.0.0.1"},
   port: {:system, "POTTERHAT_STATSD_PORT", 8125, {String, :to_integer}}
 
+config :vmstats,
+  sink: PotterhatMetrics.VmStatsSink,
+  interval: {:system, "POTTERHAT_VMSTATS_INTERVAL", 1000, {String, :to_integer}}
+
 import_config "#{Mix.env()}.exs"

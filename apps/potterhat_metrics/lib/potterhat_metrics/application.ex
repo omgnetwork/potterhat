@@ -18,6 +18,7 @@ defmodule PotterhatMetrics.Application do
   alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
+    _ = DeferredConfig.populate(:vmstats)
     _ = DeferredConfig.populate(:potterhat_metrics)
     _ = DeferredConfig.populate(:statix)
 
@@ -25,6 +26,10 @@ defmodule PotterhatMetrics.Application do
     interval_ms = Application.get_env(:potterhat_metrics, :interval_ms)
 
     children = [
+      # :vmstats needs to be started manually, otherwise it'll attempt to start before
+      # deferred_config is populated. See:
+      # https://elixirforum.com/t/automatically-starting-applications-in-the-correct-order/15571/8
+      %{id: :vmstats, start: {:vmstats, :start, [:normal, []]}},
       {PotterhatMetrics.Collector, [interval_ms: interval_ms]}
     ]
 

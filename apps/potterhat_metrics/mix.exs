@@ -32,6 +32,10 @@ defmodule PotterhatMetrics.MixProject do
 
   def application do
     [
+      # :vmstats needs to be started manually by adding it to :included_applications,
+      # otherwise it'll attempt to start before deferred_config is populated. See:
+      # https://elixirforum.com/t/automatically-starting-applications-in-the-correct-order/15571/8
+      included_applications: [:vmstats],
       extra_applications: [:logger],
       mod: {PotterhatMetrics.Application, []}
     ]
@@ -47,7 +51,8 @@ defmodule PotterhatMetrics.MixProject do
       {:potterhat_node, in_umbrella: true},
       {:potterhat_utils, in_umbrella: true},
       {:statix, "~> 1.2.0"},
-      {:telemetry, "~> 0.4.0"}
+      {:telemetry, "~> 0.4.0"},
+      {:vmstats, "~> 2.3"}
     ]
   end
 end
