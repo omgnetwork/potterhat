@@ -43,6 +43,8 @@ defmodule PotterhatMetrics.MixProject do
 
   defp deps do
     [
+      {:deferred_config, "~> 0.1.0"},
+      {:potterhat_node, in_umbrella: true},
       {:potterhat_utils, in_umbrella: true},
       {:statix, "~> 1.2.0"},
       {:telemetry, "~> 0.4.0"}

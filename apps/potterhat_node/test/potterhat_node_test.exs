@@ -17,9 +17,15 @@ defmodule PotterhatNodeTest do
 
   doctest PotterhatNode
 
-  describe "get_node_configs/0" do
+  describe "all/0" do
     test "returns the node configs" do
-      assert Application.get_env(:potterhat_node, :nodes) == PotterhatNode.get_node_configs()
+      assert PotterhatNode.all() == Application.get_env(:potterhat_node, :nodes)
+    end
+  end
+
+  describe "count/0" do
+    test "returns the node configs" do
+      assert PotterhatNode.count() == length(Application.get_env(:potterhat_node, :nodes))
     end
   end
 end

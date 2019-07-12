@@ -18,6 +18,7 @@ defmodule PotterhatMetrics.Application do
   alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
+    _ = DeferredConfig.populate(:potterhat_metrics)
     :ok = TelemetrySubscriber.attach_from_config(:potterhat_metrics)
 
     children = [

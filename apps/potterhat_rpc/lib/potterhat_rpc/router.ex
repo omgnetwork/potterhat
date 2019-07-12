@@ -37,8 +37,8 @@ defmodule PotterhatRPC.Router do
         status: true,
         potterhat_version: Application.get_env(:potterhat_rpc, :version),
         nodes: %{
-          total: length(PotterhatNode.get_node_configs()),
-          active: length(ActiveNodes.all())
+          total: PotterhatNode.count(),
+          active: ActiveNodes.count()
         }
       })
     )

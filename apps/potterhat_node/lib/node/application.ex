@@ -28,9 +28,7 @@ defmodule PotterhatNode.Application do
   end
 
   defp nodes do
-    node_configs = PotterhatNode.get_node_configs()
-
-    Enum.map(node_configs, fn config ->
+    Enum.map(PotterhatNode.all(), fn config ->
       config = Map.put(config, :node_registry, PotterhatNode.ActiveNodes)
       id = Map.fetch!(config, :id)
 

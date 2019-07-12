@@ -71,7 +71,7 @@ defmodule PotterhatMetrics.Collector do
   end
 
   defp report(:configured_nodes) do
-    count = length(PotterhatNode.get_node_configs())
+    count = PotterhatNode.count()
     :telemetry.execute([:periodic_metrics, :configured_nodes, :collected], %{total: count}, %{})
   end
 end
