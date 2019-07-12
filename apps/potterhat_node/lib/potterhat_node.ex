@@ -28,5 +28,5 @@ defmodule PotterhatNode do
   Retrieve the total number of node configurations.
   """
   @spec count() :: non_neg_integer()
-  def count(), do: length(all())
+  def count, do: length(all())
 end

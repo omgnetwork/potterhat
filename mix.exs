@@ -30,7 +30,7 @@ defmodule Potterhat.MixProject do
       flags: [:error_handling, :race_conditions, :underspecs, :unknown, :unmatched_returns],
       ignore_warnings: "dialyzer.ignore-warnings",
       list_unused_filters: true,
-      plt_add_apps: [:ex_unit, :iex, :mix, :distillery]
+      plt_add_apps: [:ex_unit, :iex, :mix, :distillery, :vmstats]
     ]
   end
 end

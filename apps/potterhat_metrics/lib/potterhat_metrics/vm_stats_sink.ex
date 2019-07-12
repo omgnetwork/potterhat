@@ -14,20 +14,23 @@
 
 defmodule PotterhatMetrics.VmStatsSink do
   @moduledoc """
-  Collect VM stats and report to Statix
+  Collects VM stats and report to Statix.
   """
   alias PotterhatMetrics.StatixReporter
 
   @behaviour :vmstats_sink
 
+  @impl :vmstats_sink
   def collect(:counter, key, value) do
     StatixReporter.set(key, value)
   end
 
+  @impl :vmstats_sink
   def collect(:gauge, key, value) do
     StatixReporter.gauge(key, value)
   end
 
+  @impl :vmstats_sink
   def collect(:timing, key, value) do
     StatixReporter.timing(key, value)
   end
