@@ -47,9 +47,6 @@ defmodule PotterhatMetrics.Collector do
       interval_ms: Keyword.fetch!(opts, :interval_ms)
     }
 
-    # The interval might be long. Don't wait to start reporting, do it the next second.
-    _ = if state.interval_ms > 0, do: schedule_work(1000)
-
     {:ok, state}
   end
 
