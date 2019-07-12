@@ -103,16 +103,16 @@ defmodule PotterhatNode.Node do
         {:noreply, %{state | state: :started, event_listener: pid}}
 
       {:error, error} ->
-        retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
+        retry_interval_ms = Application.get_env(:potterhat_node, :retry_interval_ms)
 
         _ =
           Logger.warn(
             "#{state.label} (#{inspect(self())}): Failed to connect: #{inspect(error)}. Retrying in #{
-              retry_period_ms
+              retry_interval_ms
             } ms."
           )
 
-        :ok = Process.sleep(retry_period_ms)
+        :ok = Process.sleep(retry_interval_ms)
         {:noreply, %{state | state: :restarting}, {:continue, :listen}}
     end
   end

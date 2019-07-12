@@ -3,7 +3,7 @@ use Mix.Config
 config :potterhat_node,
   nodes: {:apply, {PotterhatNode.EnvConfigProvider, :get_configs, []}},
   active_nodes: [],
-  retry_period_ms: 5000,
+  retry_interval_ms: {:system, "POTTERHAT_NODE_RETRY_INTERVAL", 5000, {String, :to_integer}},
   telemetry_subscribers: %{
     "node-event-logger" => PotterhatNode.EventLogger
   }
