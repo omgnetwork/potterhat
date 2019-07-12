@@ -120,7 +120,9 @@ defmodule PotterhatNode.ActiveNodes do
     prepended = [{pid, priority, label} | nodes]
     nodes = Enum.sort_by(prepended, fn {_, priority, _} -> priority end)
 
-    _ = :telemetry.execute([:active_nodes, :registered], %{num_active: length(nodes)}, %{pid: pid})
+    _ =
+      :telemetry.execute([:active_nodes, :registered], %{num_active: length(nodes)}, %{pid: pid})
+
     {:reply, :ok, nodes}
   end
 
@@ -128,7 +130,11 @@ defmodule PotterhatNode.ActiveNodes do
   @impl true
   def handle_call({:deregister, pid_to_delete}, _from, nodes) do
     nodes = Enum.reject(nodes, fn {pid, _priority, _label} -> pid == pid_to_delete end)
-    _ = :telemetry.execute([:active_nodes, :deregistered], %{num_active: length(nodes)}, %{pid: pid_to_delete})
+
+    _ =
+      :telemetry.execute([:active_nodes, :deregistered], %{num_active: length(nodes)}, %{
+        pid: pid_to_delete
+      })
 
     {:reply, :ok, nodes}
   end
