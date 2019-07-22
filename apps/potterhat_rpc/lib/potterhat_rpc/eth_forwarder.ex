@@ -19,7 +19,7 @@ defmodule PotterhatRPC.EthForwarder do
   require Logger
   alias PotterhatNode.{ActiveNodes, Node}
 
-  @spec forward(map(), map(), Keyword.t()) ::
+  @spec forward(map(), Keyword.t(), Keyword.t()) ::
           {:ok, %PotterhatNode.Node.RPCResponse{}} | {:error, :no_nodes_available}
   def forward(body_params, header_params, opts \\ []) do
     node_registry = Keyword.get(opts, :node_registry, ActiveNodes)
