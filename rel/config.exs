@@ -23,7 +23,10 @@ release :potterhat do
   set vm_args: "rel/vm.args"
   set applications: [
     :runtime_tools,
-    potterhat_node: :permanent
+    potterhat_metrics: :permanent,
+    potterhat_node: :permanent,
+    potterhat_rpc: :permanent,
+    potterhat_utils: :permanent
   ]
 
   set commands: []
