@@ -14,102 +14,175 @@
 
 defmodule PotterhatNode.EventLogger do
   @moduledoc """
-  Logs received events.
+  Logs telemetry events emitted by PotterhatNode.
   """
-  require Logger
+  import PotterhatUtils.BaseLogger
 
-  ## New block listening
+  @behaviour PotterhatUtils.TelemetrySubscriber
 
-  def log_event({:new_heads, %{"result" => result}}, opts) when is_binary(result) do
-    info("Listening for new heads started...", opts)
+  @supported_events [
+    [:active_nodes, :registered],
+    [:active_nodes, :deregistered],
+    [:event_listener, :new_head, :subscribe_success],
+    [:event_listener, :new_head, :subscribe_failed],
+    [:event_listener, :new_head, :head_received],
+    [:event_listener, :log, :subscribe_success],
+    [:event_listener, :log, :subscribe_failed],
+    [:event_listener, :log, :log_received],
+    [:event_listener, :new_pending_transaction, :subscribe_success],
+    [:event_listener, :new_pending_transaction, :subscribe_failed],
+    [:event_listener, :new_pending_transaction, :transaction_received],
+    [:event_listener, :sync_status, :subscribe_success],
+    [:event_listener, :sync_status, :subscribe_failed],
+    [:event_listener, :sync_status, :sync_started],
+    [:event_listener, :sync_status, :sync_stopped]
+  ]
+
+  @impl true
+  def init, do: :ok
+
+  @impl true
+  def supported_events, do: @supported_events
+
+  #
+  # Active nodes
+  #
+
+  @impl true
+  def handle_event([:active_nodes, :registered], measurements, meta, _config) do
+    debug(
+      "Registered node: #{inspect(meta.pid)}. Active nodes: #{measurements.num_active}.",
+      meta
+    )
   end
 
-  def log_event({:new_heads, %{"error" => _} = data}, opts) do
-    error("Failed to listen to new heads: #{inspect(data)}", opts)
+  @impl true
+  def handle_event([:active_nodes, :deregistered], measurements, meta, _config) do
+    debug(
+      "Deregistered node: #{inspect(meta.pid)}. Active nodes: #{measurements.num_active}.",
+      meta
+    )
   end
 
-  def log_event({:new_heads, data}, opts) do
-    block_hash = data["params"]["result"]["hash"]
+  #
+  # RPC requests
+  #
 
-    block_number =
-      data["params"]["result"]["number"]
-      |> String.slice(2..-1)
-      |> Base.decode16!(case: :mixed)
-      |> :binary.decode_unsigned()
-
-    debug("New block #{inspect(block_number)}: #{block_hash}", opts)
+  @impl true
+  def handle_event([:rpc, :request, :failed_over], _measurements, meta, _config) do
+    error("Retrying the request with the next available node.", meta)
   end
 
-  ## Logs listening
+  #
+  # New head events
+  #
 
-  def log_event({:logs, %{"result" => result}}, opts) when is_binary(result) do
-    info("Listening for logs started...", opts)
+  @impl true
+  def handle_event([:event_listener, :new_head, :subscribe_success], _measurements, meta, _config) do
+    info("Listening for new heads started...", meta)
   end
 
-  def log_event({:logs, %{"error" => _} = data}, opts) do
-    error("Failed to listen to logs: #{inspect(data)}", opts)
+  @impl true
+  def handle_event([:event_listener, :new_head, :subscribe_failed], _measurements, meta, _config) do
+    error("Failed to listen to new heads: #{inspect(meta.error)}", meta)
   end
 
-  def log_event({:logs, %{"params" => _} = log}, opts) do
-    debug("New log: #{inspect(log)}", opts)
+  @impl true
+  def handle_event([:event_listener, :new_head, :head_received], _measurements, meta, _config) do
+    debug("New head #{meta.block_number}: #{meta.block_hash}", meta)
   end
 
-  def log_event({:logs, data}, opts) do
-    warn("Unknown logs data: #{inspect(data)}", opts)
+  #
+  # Log events
+  #
+
+  @impl true
+  def handle_event([:event_listener, :log, :subscribe_success], _measurements, meta, _config) do
+    info("Listening for logs started...", meta)
   end
 
-  ## New pending transactions listening
-
-  def log_event({:new_pending_transactions, %{"result" => result}}, opts)
-      when is_binary(result) do
-    info("Listening for new_pending_transactions started...", opts)
+  @impl true
+  def handle_event([:event_listener, :log, :subscribe_failed], _measurements, meta, _config) do
+    error("Failed to listen to logs: #{inspect(meta.error)}", meta)
   end
 
-  def log_event({:new_pending_transactions, %{"error" => _} = data}, opts) do
-    error("Failed to listen to new_pending_transactions: #{inspect(data)}", opts)
+  @impl true
+  def handle_event([:event_listener, :log, :log_received], _measurements, meta, _config) do
+    debug("New log: block #{meta.block_number}, index #{meta.log_index}", meta)
   end
 
-  def log_event({:new_pending_transactions, %{"params" => _} = txn}, opts) do
-    debug("New new_pending_transactions data: #{inspect(txn)}", opts)
+  #
+  # New pending transaction events
+  #
+
+  @impl true
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :subscribe_success],
+        _measurements,
+        meta,
+        _config
+      ) do
+    info("Listening for new pending transactions started...", meta)
   end
 
-  def log_event({:new_pending_transactions, data}, opts) do
-    warn("Unknown new_pending_transactions data: #{inspect(data)}", opts)
+  @impl true
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :subscribe_failed],
+        _measurements,
+        meta,
+        _config
+      ) do
+    error("Failed to listen to new pending transactions: #{inspect(meta.error)}", meta)
   end
 
-  ## Sync status listening
-
-  def log_event({:sync_status, %{"result" => result}}, opts) when is_binary(result) do
-    info("Listening for sync status started...", opts)
+  @impl true
+  def handle_event(
+        [:event_listener, :new_pending_transaction, :transaction_received],
+        _measurements,
+        meta,
+        _config
+      ) do
+    debug("New pending transaction: #{meta.transaction_hash}", meta)
   end
 
-  def log_event({:sync_status, %{"error" => _} = data}, opts) do
-    error("Failed to listen to sync status: #{inspect(data)}", opts)
+  #
+  # Sync status events
+  #
+
+  @impl true
+  def handle_event(
+        [:event_listener, :sync_status, :subscribe_success],
+        _measurements,
+        meta,
+        _config
+      ) do
+    info("Listening for sync status started...", meta)
   end
 
-  def log_event({:sync_status, %{"params" => %{"result" => false}}}, opts) do
-    debug("Sync stopped.", opts)
+  @impl true
+  def handle_event(
+        [:event_listener, :sync_status, :subscribe_failed],
+        _measurements,
+        meta,
+        _config
+      ) do
+    error("Failed to listen to sync status: #{inspect(meta.error)}", meta)
   end
 
-  def log_event({:sync_status, %{"params" => %{"result" => result}}}, opts) do
+  @impl true
+  def handle_event([:event_listener, :sync_status, :sync_started], measurements, meta, _config) do
     message = """
     Sync started.
-      - Starting block: #{result["status"]["StartingBlock"]}"
-      - Current block: #{result["status"]["CurrentBlock"]}"
-      - Highest block: #{result["status"]["HighestBlock"]}"
+      - Starting block: #{measurements.starting_block}"
+      - Current block: #{measurements.current_block}"
+      - Highest block: #{measurements.highest_block}"
     """
 
-    debug(message, opts)
+    debug(message, meta)
   end
 
-  def log_event({type, data}, opts) do
-    warn("Unknown event #{inspect(type)} with data: #{inspect(data)}", opts)
+  @impl true
+  def handle_event([:event_listener, :sync_status, :sync_stopped], _measurements, meta, _config) do
+    debug("Sync stopped.", meta)
   end
-
-  defp debug(message, opts), do: message |> prefix_with(opts) |> Logger.debug()
-  defp info(message, opts), do: message |> prefix_with(opts) |> Logger.info()
-  defp warn(message, opts), do: message |> prefix_with(opts) |> Logger.warn()
-  defp error(message, opts), do: message |> prefix_with(opts) |> Logger.error()
-
-  defp prefix_with(message, opts), do: "#{opts[:label]} (#{inspect(opts[:pid])}): #{message}"
 end

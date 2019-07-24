@@ -21,8 +21,12 @@ defmodule PotterhatNode do
   @doc """
   Retrieve the list of all node configurations.
   """
-  @spec get_node_configs() :: [%PotterhatNode.NodeConfig{}]
-  def get_node_configs do
-    Application.get_env(:potterhat_node, :nodes)
-  end
+  @spec all() :: [%PotterhatNode.NodeConfig{}]
+  def all, do: Application.get_env(:potterhat_node, :nodes)
+
+  @doc """
+  Retrieve the total number of node configurations.
+  """
+  @spec count() :: non_neg_integer()
+  def count, do: length(all())
 end

@@ -15,6 +15,7 @@
 defmodule PotterhatRPC.RouterTest do
   use PotterhatRPC.ConnCase, async: true
   import PotterhatNode.EthereumTestHelper
+  import PotterhatUtils.TelemetryTestHelper
   alias PotterhatNode.{ActiveNodes, Node}
   alias PotterhatRPC.Router
 
@@ -59,13 +60,11 @@ defmodule PotterhatRPC.RouterTest do
 
   describe "POST /" do
     test "returns response from the active node" do
-      req_id = :rand.uniform(999)
-
       body_params = %{
         "jsonrpc" => "2.0",
         "method" => "web3_clientVersion",
         "params" => [],
-        "id" => req_id
+        "id" => :rand.uniform(999)
       }
 
       response =
@@ -78,13 +77,11 @@ defmodule PotterhatRPC.RouterTest do
     end
 
     test "returns an error response when received an error from forwarding" do
-      req_id = :rand.uniform(999)
-
       body_params = %{
         "jsonrpc" => "2.0",
         "method" => "some invalid method",
         "params" => [],
-        "id" => req_id
+        "id" => :rand.uniform(999)
       }
 
       response =
@@ -94,6 +91,28 @@ defmodule PotterhatRPC.RouterTest do
 
       assert response["error"]["code"] == -32_601
       assert response["error"]["message"] == "Method not found"
+    end
+
+    test "emits Plug.Telemetry events" do
+      listen_telemetry([:rpc, :request, :start])
+      listen_telemetry([:rpc, :request, :success])
+      listen_telemetry([:rpc, :request, :stop])
+
+      body_params = %{
+        "jsonrpc" => "2.0",
+        "method" => "web3_clientVersion",
+        "params" => [],
+        "id" => :rand.uniform(999)
+      }
+
+      _ =
+        Router
+        |> call(:post, "/", body_params)
+        |> json_response()
+
+      assert_telemetry([:rpc, :request, :start])
+      assert_telemetry([:rpc, :request, :success])
+      assert_telemetry([:rpc, :request, :stop])
     end
   end
 end

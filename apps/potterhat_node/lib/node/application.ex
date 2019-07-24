@@ -15,9 +15,11 @@
 defmodule PotterhatNode.Application do
   @moduledoc false
   use Application
+  alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_node)
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_node)
 
     children = [PotterhatNode.ActiveNodes | nodes()]
 
@@ -26,9 +28,7 @@ defmodule PotterhatNode.Application do
   end
 
   defp nodes do
-    node_configs = PotterhatNode.get_node_configs()
-
-    Enum.map(node_configs, fn config ->
+    Enum.map(PotterhatNode.all(), fn config ->
       config = Map.put(config, :node_registry, PotterhatNode.ActiveNodes)
       id = Map.fetch!(config, :id)
 

@@ -1,6 +1,3 @@
 # Warnings from :websockex dependency. Un-ignore after we have https://github.com/Azolo/websockex/pull/64/files
 lib/websockex.ex:19: Function handle_cast/2 only terminates with explicit exception
 lib/websockex.ex:297: Expression produces a value of type 'ok' | {'error',_}, but this value is unmatched
-
-# Couldn't locate the issue. See: https://github.com/omisego/potterhat/pull/29#discussion_r301001974
-apps/potterhat_rpc/lib/potterhat_rpc/router.ex:45: The created fun has no local return

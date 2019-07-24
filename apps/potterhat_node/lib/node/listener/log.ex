@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.Log do
   Listens for log events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 3
 
@@ -74,9 +73,64 @@ defmodule PotterhatNode.Listener.Log do
 
   @doc false
   @impl true
-  def handle_frame({_type, msg}, state) do
-    {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :logs, decoded})
+  def handle_frame({_type, serialized}, state) do
+    {:ok, data} = Jason.decode(serialized)
+    state = do_handle_frame(data, state)
     {:ok, state}
+  end
+
+  #
+  # Handle received websocket frames
+  #
+
+  # Successful subscription
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label]
+    }
+
+    _ = :telemetry.execute([:event_listener, :log, :subscribe_success], %{}, meta)
+    state
+  end
+
+  # Failed subscription
+  defp do_handle_frame(%{"error" => error}, state) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label],
+      error: error
+    }
+
+    _ = :telemetry.execute([:event_listener, :log, :subscribe_failed], %{}, meta)
+    state
+  end
+
+  # Log received
+  defp do_handle_frame(%{"params" => _} = data, state) do
+    transaction_hash = data["params"]["result"]["transactionHash"]
+
+    block_number =
+      data["params"]["result"]["blockNumber"]
+      |> String.slice(2..-1)
+      |> Base.decode16!(case: :mixed)
+      |> :binary.decode_unsigned()
+
+    log_index =
+      data["params"]["result"]["logIndex"]
+      |> String.slice(2..-1)
+      |> Base.decode16!(case: :mixed)
+      |> :binary.decode_unsigned()
+
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label],
+      transaction_hash: transaction_hash,
+      block_number: block_number,
+      log_index: log_index
+    }
+
+    _ = :telemetry.execute([:event_listener, :log, :log_received], %{}, meta)
+    state
   end
 end

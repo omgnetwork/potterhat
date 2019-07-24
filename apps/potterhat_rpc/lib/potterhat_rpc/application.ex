@@ -15,13 +15,14 @@
 defmodule PotterhatRPC.Application do
   @moduledoc false
   use Application
-  require Logger
+  alias PotterhatUtils.TelemetrySubscriber
 
   def start(_type, _args) do
     _ = DeferredConfig.populate(:potterhat_rpc)
+    :ok = TelemetrySubscriber.attach_from_config(:potterhat_rpc)
 
     port = Application.get_env(:potterhat_rpc, :rpc_port)
-    _ = Logger.info("Starting RPC server on port #{port}")
+    _ = :telemetry.execute([:rpc, :server, :starting], %{}, %{port: port})
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: PotterhatRPC.Router, options: [port: port]}

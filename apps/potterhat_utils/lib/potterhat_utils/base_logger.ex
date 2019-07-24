@@ -12,27 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.Listener.Helper do
+defmodule PotterhatUtils.BaseLogger do
   @moduledoc """
-  Helper functions for listeners.
+  Common logger utilities.
   """
+  require Logger
 
-  @doc """
-  Broadcast the given message to all linked processes.
-  """
-  @spec broadcast_linked(any()) :: :ok
-  def broadcast_linked(message) do
-    {:links, links} = Process.info(self(), :links)
+  def debug(message, meta), do: message |> prefix_with(meta) |> Logger.debug()
+  def info(message, meta), do: message |> prefix_with(meta) |> Logger.info()
+  def warn(message, meta), do: message |> prefix_with(meta) |> Logger.warn()
+  def error(message, meta), do: message |> prefix_with(meta) |> Logger.error()
 
-    _ =
-      Enum.each(links, fn
-        link when is_pid(link) ->
-          :ok = GenServer.cast(link, message)
-
-        _ ->
-          :skip
-      end)
-
-    :ok
-  end
+  defp prefix_with(message, %{node_id: _} = meta), do: "#{meta.node_id}: #{message}"
+  defp prefix_with(message, _meta), do: message
 end

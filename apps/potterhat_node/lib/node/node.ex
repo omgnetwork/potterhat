@@ -18,7 +18,7 @@ defmodule PotterhatNode.Node do
   """
   use GenServer
   require Logger
-  alias PotterhatNode.{ActiveNodes, EventLogger}
+  alias PotterhatNode.ActiveNodes
   alias PotterhatNode.Listener.NewHead
 
   defmodule RPCResponse do
@@ -87,7 +87,7 @@ defmodule PotterhatNode.Node do
   def handle_continue(:listen, state) do
     opts = [
       node_id: state[:id],
-      label: state[:label]
+      node_label: state[:label]
     ]
 
     case NewHead.start_link(state[:ws], opts) do
@@ -103,16 +103,16 @@ defmodule PotterhatNode.Node do
         {:noreply, %{state | state: :started, event_listener: pid}}
 
       {:error, error} ->
-        retry_period_ms = Application.get_env(:potterhat_node, :retry_period_ms)
+        retry_interval_ms = Application.get_env(:potterhat_node, :retry_interval_ms)
 
         _ =
           Logger.warn(
             "#{state.label} (#{inspect(self())}): Failed to connect: #{inspect(error)}. Retrying in #{
-              retry_period_ms
+              retry_interval_ms
             } ms."
           )
 
-        :ok = Process.sleep(retry_period_ms)
+        :ok = Process.sleep(retry_interval_ms)
         {:noreply, %{state | state: :restarting}, {:continue, :listen}}
     end
   end
@@ -186,11 +186,5 @@ defmodule PotterhatNode.Node do
 
         {:reply, error, state}
     end
-  end
-
-  @impl true
-  def handle_cast({:event_received, event, message}, state) do
-    _ = EventLogger.log_event({event, message}, label: state.label, pid: self())
-    {:noreply, state}
   end
 end

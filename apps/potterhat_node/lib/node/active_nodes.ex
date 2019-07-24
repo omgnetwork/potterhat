@@ -54,6 +54,13 @@ defmodule PotterhatNode.ActiveNodes do
   def all(server \\ __MODULE__), do: GenServer.call(server, :all)
 
   @doc """
+  Returns a count of all active nodes.
+  """
+  @spec count() :: non_neg_integer()
+  @spec count(GenServer.server()) :: non_neg_integer()
+  def count(server \\ __MODULE__), do: GenServer.call(server, :count)
+
+  @doc """
   Returns the pid of the active node with the highest priority.
   """
   @spec first() :: node_info() | nil
@@ -97,6 +104,12 @@ defmodule PotterhatNode.ActiveNodes do
 
   @doc false
   @impl true
+  def handle_call(:count, _from, state) do
+    {:reply, length(state), state}
+  end
+
+  @doc false
+  @impl true
   def handle_call(:first, _from, nodes) do
     {:reply, List.first(nodes), nodes}
   end
@@ -107,7 +120,9 @@ defmodule PotterhatNode.ActiveNodes do
     prepended = [{pid, priority, label} | nodes]
     nodes = Enum.sort_by(prepended, fn {_, priority, _} -> priority end)
 
-    _ = Logger.debug("Registered node: #{inspect(pid)}. Active nodes: #{length(nodes)}.")
+    _ =
+      :telemetry.execute([:active_nodes, :registered], %{num_active: length(nodes)}, %{pid: pid})
+
     {:reply, :ok, nodes}
   end
 
@@ -117,9 +132,9 @@ defmodule PotterhatNode.ActiveNodes do
     nodes = Enum.reject(nodes, fn {pid, _priority, _label} -> pid == pid_to_delete end)
 
     _ =
-      Logger.debug(
-        "Deregistered node: #{inspect(pid_to_delete)}. Active nodes: #{length(nodes)}."
-      )
+      :telemetry.execute([:active_nodes, :deregistered], %{num_active: length(nodes)}, %{
+        pid: pid_to_delete
+      })
 
     {:reply, :ok, nodes}
   end

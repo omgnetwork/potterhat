@@ -13,252 +13,137 @@
 # limitations under the License.
 
 defmodule PotterhatNode.EventLoggerTest do
-  use ExUnit.Case, async: true
+  # Async false due to changing log level
+  use ExUnit.Case, async: false
   import ExUnit.CaptureLog
   alias PotterhatNode.EventLogger
-  require Logger
 
   setup do
-    # Temporarily allows verbose logging so event logging can be tests.
-    original_level = Application.get_env(:logger, :level)
-    :ok = Logger.configure(level: :debug)
-    on_exit(fn -> Logger.configure(level: original_level) end)
+    handler_id = "test_rpc_event_logger_#{:rand.uniform(999_999)}"
 
-    meta = %{
-      opts: [
-        label: "The Node",
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        EventLogger.supported_events(),
+        &EventLogger.handle_event/4,
+        nil
+      )
+
+    :ok = on_exit(fn -> :telemetry.detach(handler_id) end)
+
+    log_level = Logger.level()
+    on_exit(fn -> Logger.configure(level: log_level) end)
+
+    :ok
+  end
+
+  describe "supported_events/0" do
+    test "returns a list of telemetry events" do
+      Enum.each(EventLogger.supported_events(), fn event ->
+        assert is_list(event)
+        assert Enum.all?(event, fn item -> is_atom(item) end)
+      end)
+    end
+  end
+
+  describe "handle_event/4" do
+    test "logs a debug message for [:active_nodes, :registered]" do
+      :ok = Logger.configure(level: :debug)
+
+      measurements = %{
+        num_active: 2
+      }
+
+      meta = %{
+        node_id: :some_node_id,
         pid: self()
-      ]
-    }
-
-    {:ok, meta}
-  end
-
-  describe "log_event/2 with new heads events" do
-    test "logs when listening started", meta do
-      data = %{"result" => "some result"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for new heads started.+/, log)
-    end
-
-    test "logs when listening failed", meta do
-      data = %{"error" => "some error"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Failed to listen to new heads: .+"some error".+/,
-               log
-             )
-    end
-
-    test "logs when a new head is received", meta do
-      data = %{"params" => %{"result" => %{"number" => "0x77be11", "hash" => "0x1234"}}}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_heads, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): New block 7847441: 0x1234/, log)
-    end
-  end
-
-  describe "log_event/2 with logs events" do
-    test "logs when listening started", meta do
-      data = %{"result" => "some result"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for logs started.+/, log)
-    end
-
-    test "logs when listening failed", meta do
-      data = %{"error" => "some error"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Failed to listen to logs: .+"some error".+/,
-               log
-             )
-    end
-
-    test "logs when a new log is received", meta do
-      data = %{"params" => "some data"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): New log: .+ "some data"/, log)
-    end
-
-    test "logs when an unknown log is received", meta do
-      data = "unknown data"
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:logs, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Unknown logs data: "unknown data"/, log)
-    end
-  end
-
-  describe "log_event/2 with new_pending_transactions" do
-    test "logs when listening started", meta do
-      data = %{"result" => "some result"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Listening for new_pending_transactions started.+/,
-               log
-             )
-    end
-
-    test "logs when listening failed", meta do
-      data = %{"error" => "some error"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Failed to listen to new_pending_transactions: .+"some error".+/,
-               log
-             )
-    end
-
-    test "logs when a new pending transactions is received", meta do
-      data = %{"params" => "some data"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): New new_pending_transactions data: .+ "some data"/,
-               log
-             )
-    end
-
-    test "logs when an unknown pending transactions is received", meta do
-      data = "unknown data"
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:new_pending_transactions, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Unknown new_pending_transactions data: "unknown data"/,
-               log
-             )
-    end
-  end
-
-  describe "log_event/2 with sync_status" do
-    test "logs when listening started", meta do
-      data = %{"result" => "some result"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Listening for sync status started.+/, log)
-    end
-
-    test "logs when listening failed", meta do
-      data = %{"error" => "some error"}
-
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
-        end)
-
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Failed to listen to sync status: .+"some error".+/,
-               log
-             )
-    end
-
-    test "logs when a sync starts", meta do
-      data = %{
-        "params" => %{
-          "subscription" => "0xe2ffeb2703bcf602d42922385829ce96",
-          "result" => %{
-            "syncing" => true,
-            "status" => %{
-              "StartingBlock" => 674_427,
-              "CurrentBlock" => 67_400,
-              "HighestBlock" => 674_432,
-              "PulledStates" => 0,
-              "KnownStates" => 0
-            }
-          }
-        }
       }
 
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
-        end)
-
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Sync started.+/, log)
+      assert capture_log(fn ->
+               :telemetry.execute([:active_nodes, :registered], measurements, meta)
+             end) =~ "[debug] some_node_id: Registered node:"
     end
 
-    test "logs when a sync stops", meta do
-      data = %{
-        "params" => %{
-          "result" => false
-        }
+    test "logs a debug message for [:active_nodes, :deregistered]" do
+      :ok = Logger.configure(level: :debug)
+
+      measurements = %{
+        num_active: 1
       }
 
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:sync_status, data}, meta.opts)
-        end)
+      meta = %{
+        node_id: :some_node_id,
+        pid: self()
+      }
 
-      assert Regex.match?(~r/.+The Node \(#PID<.+>\): Sync stopped.+/, log)
+      assert capture_log(fn ->
+               :telemetry.execute([:active_nodes, :deregistered], measurements, meta)
+             end) =~ "[debug] some_node_id: Deregistered node:"
     end
-  end
 
-  describe "log_event/2" do
-    test "logs when received an unknown event", meta do
-      data = %{"result" => "some result"}
+    test "logs an error message for [:rpc, :request, :failed_over]" do
+      measurements = %{}
 
-      log =
-        capture_log(fn ->
-          EventLogger.log_event({:some_unknown_event, data}, meta.opts)
-        end)
+      meta = %{
+        node_id: :some_node_id
+      }
 
-      assert Regex.match?(
-               ~r/.+The Node \(#PID<.+>\): Unknown event :some_unknown_event with data:.+/,
-               log
-             )
+      assert capture_log(fn ->
+               :telemetry.execute([:rpc, :request, :failed_over], measurements, meta)
+             end) =~ "[error] some_node_id: Retrying the request"
+    end
+
+    test "logs an info message for [:event_listener, :new_head, :subscribe_success]" do
+      :ok = Logger.configure(level: :info)
+      measurements = %{}
+
+      meta = %{
+        node_id: :some_node_id
+      }
+
+      assert capture_log(fn ->
+               :telemetry.execute(
+                 [:event_listener, :new_head, :subscribe_success],
+                 measurements,
+                 meta
+               )
+             end) =~ "[info] some_node_id: Listening for new heads started"
+    end
+
+    test "logs an error message for [:event_listener, :new_head, :subscribe_failed]" do
+      measurements = %{}
+
+      meta = %{
+        node_id: :some_node_id,
+        error: "some error"
+      }
+
+      assert capture_log(fn ->
+               :telemetry.execute(
+                 [:event_listener, :new_head, :subscribe_failed],
+                 measurements,
+                 meta
+               )
+             end) =~ "[error] some_node_id: Failed to listen to new heads"
+    end
+
+    test "logs a debug message for [:event_listener, :new_head, :head_received]" do
+      :ok = Logger.configure(level: :debug)
+      measurements = %{}
+
+      meta = %{
+        node_id: :some_node_id,
+        block_number: 1234,
+        block_hash: "0x1234"
+      }
+
+      assert capture_log(fn ->
+               :telemetry.execute(
+                 [:event_listener, :new_head, :head_received],
+                 measurements,
+                 meta
+               )
+             end) =~ "[debug] some_node_id: New head 1234: 0x1234"
     end
   end
 end

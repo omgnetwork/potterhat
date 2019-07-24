@@ -19,7 +19,7 @@ defmodule PotterhatRPC.EthForwarder do
   require Logger
   alias PotterhatNode.{ActiveNodes, Node}
 
-  @spec forward(map(), map(), Keyword.t()) ::
+  @spec forward(map(), Keyword.t(), Keyword.t()) ::
           {:ok, %PotterhatNode.Node.RPCResponse{}} | {:error, :no_nodes_available}
   def forward(body_params, header_params, opts \\ []) do
     node_registry = Keyword.get(opts, :node_registry, ActiveNodes)
@@ -38,6 +38,7 @@ defmodule PotterhatRPC.EthForwarder do
 
       {:error, error} ->
         _ = Logger.error("Failed to serve the RPC request from #{label}: #{inspect(error)}.")
+        _ = :telemetry.execute([:rpc, :request, :failed_over], %{}, %{body_params: body_params})
         do_forward(remaining, body_params, header_params)
     end
   end

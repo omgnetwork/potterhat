@@ -17,13 +17,16 @@ defmodule PotterhatRPC.Router do
   Serves RPC requests.
   """
   use Plug.Router
+  alias Plug.Conn
   alias PotterhatNode.ActiveNodes
   alias PotterhatRPC.{ErrorHandler, EthForwarder}
 
   plug(Plug.Logger)
-  plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
 
   plug(:match)
+  plug(Plug.Telemetry, event_prefix: [:rpc, :request])
+  plug(Plug.Parsers, parsers: [:json], json_decoder: Jason)
+  plug(:store_eth_method)
   plug(:dispatch)
 
   get "/" do
@@ -34,8 +37,8 @@ defmodule PotterhatRPC.Router do
         status: true,
         potterhat_version: Application.get_env(:potterhat_rpc, :version),
         nodes: %{
-          total: length(PotterhatNode.get_node_configs()),
-          active: length(ActiveNodes.all())
+          total: PotterhatNode.count(),
+          active: ActiveNodes.count()
         }
       })
     )
@@ -45,6 +48,8 @@ defmodule PotterhatRPC.Router do
   post "/" do
     case EthForwarder.forward(conn.body_params, conn.req_headers) do
       {:ok, response} ->
+        _ = :telemetry.execute([:rpc, :request, :success], %{}, %{conn: conn})
+
         # `resp_headers` is reset to `[]` ensure only node's headers are returned.
         conn
         |> Map.put(:resp_headers, [])
@@ -52,7 +57,12 @@ defmodule PotterhatRPC.Router do
         |> send_resp(response.status_code, response.body)
 
       {:error, code} ->
+        _ = :telemetry.execute([:rpc, :request, :failed], %{}, %{conn: conn, error_code: code})
         ErrorHandler.send_resp(conn, code)
     end
+  end
+
+  defp store_eth_method(conn, _opts) do
+    Conn.assign(conn, :eth_method, conn.body_params["method"])
   end
 end

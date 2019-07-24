@@ -17,7 +17,6 @@ defmodule PotterhatNode.Listener.NewHead do
   Listens for newHeads events.
   """
   use WebSockex
-  import PotterhatNode.Listener.Helper
 
   @subscription_id 1
 
@@ -64,7 +63,8 @@ defmodule PotterhatNode.Listener.NewHead do
   @spec init(Keyword.t()) :: {:ok, map()}
   def init(opts) do
     state = %{
-      label: opts[:label]
+      node_id: opts[:node_id],
+      node_label: opts[:node_label]
     }
 
     {:ok, state}
@@ -72,9 +72,57 @@ defmodule PotterhatNode.Listener.NewHead do
 
   @doc false
   @impl true
-  def handle_frame({_type, msg}, state) do
-    {:ok, decoded} = Jason.decode(msg)
-    _ = broadcast_linked({:event_received, :new_heads, decoded})
+  def handle_frame({_type, serialized}, state) do
+    {:ok, data} = Jason.decode(serialized)
+    state = do_handle_frame(data, state)
     {:ok, state}
+  end
+
+  #
+  # Handle received websocket frames
+  #
+
+  # Successful subscription
+  defp do_handle_frame(%{"result" => result}, state) when is_binary(result) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label]
+    }
+
+    _ = :telemetry.execute([:event_listener, :new_head, :subscribe_success], %{}, meta)
+    state
+  end
+
+  # Failed subscription
+  defp do_handle_frame(%{"error" => error}, state) do
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label],
+      error: error
+    }
+
+    _ = :telemetry.execute([:event_listener, :new_head, :subscribe_failed], %{}, meta)
+    state
+  end
+
+  # New head received
+  defp do_handle_frame(%{"params" => _} = data, state) do
+    block_number =
+      data["params"]["result"]["number"]
+      |> String.slice(2..-1)
+      |> Base.decode16!(case: :mixed)
+      |> :binary.decode_unsigned()
+
+    block_hash = data["params"]["result"]["hash"]
+
+    meta = %{
+      node_id: state[:node_id],
+      node_label: state[:node_label],
+      block_number: block_number,
+      block_hash: block_hash
+    }
+
+    _ = :telemetry.execute([:event_listener, :new_head, :head_received], %{}, meta)
+    state
   end
 end
