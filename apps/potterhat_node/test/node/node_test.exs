@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNodeTest do
-  use ExUnit.Case
+defmodule PotterhatNode.NodeTest do
+  use ExUnit.Case, async: true
   import PotterhatNode.EthereumTestHelper
   alias PotterhatNode.Node
   alias PotterhatNode.Node.RPCResponse
-
-  doctest PotterhatNode
 
   @node_config %PotterhatNode.NodeConfig{
     id: :test_node_start_link,

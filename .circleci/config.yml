@@ -45,7 +45,10 @@ jobs:
             - src/deps
             - src/_build
       - run:
-          command: sh .circleci/ci_slack.sh failure
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              sh .circleci/ci_slack.sh failure
+            fi
           when: on_fail
 
   lint:
@@ -56,7 +59,10 @@ jobs:
       - run: make check-format
       - run: make check-credo
       - run:
-          command: sh .circleci/ci_slack.sh failure
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              sh .circleci/ci_slack.sh failure
+            fi
           when: on_fail
 
   dialyze:
@@ -81,7 +87,10 @@ jobs:
             - ~/var/dialyzer
           when: always
       - run:
-          command: sh .circleci/ci_slack.sh failure
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              sh .circleci/ci_slack.sh failure
+            fi
           when: on_fail
 
   test:
@@ -91,7 +100,10 @@ jobs:
       - setup_workspace
       - run: make test
       - run:
-          command: sh .circleci/ci_slack.sh failure
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              sh .circleci/ci_slack.sh failure
+            fi
           when: on_fail
 
   publish:

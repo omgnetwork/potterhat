@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode do
-  @moduledoc """
-  The Potterhat's sub-application responsible for listening to events,
-  and exchange data to/from Ethereum nodes.
-  """
+defmodule PotterhatNodeTest do
+  use ExUnit.Case, async: true
+
+  doctest PotterhatNode
+
+  describe "get_node_configs/0" do
+    test "returns the node configs" do
+      assert Application.get_env(:potterhat_node, :nodes) == PotterhatNode.get_node_configs()
+    end
+  end
 end

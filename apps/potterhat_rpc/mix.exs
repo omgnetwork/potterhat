@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.MixProject do
+defmodule PotterhatRPC.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :potterhat_node,
+      app: :potterhat_rpc,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -33,7 +33,7 @@ defmodule PotterhatNode.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {PotterhatNode.Application, []}
+      mod: {PotterhatRPC.Application, []}
     ]
   end
 
@@ -43,13 +43,9 @@ defmodule PotterhatNode.MixProject do
 
   defp deps do
     [
-      {:deferred_config, "~> 0.1.0"},
-      {:ethereumex, "~> 0.5.3"},
       {:jason, "~> 1.1"},
-      {:websockex, "~> 0.4.0"},
-      {:httpoison, "~> 1.4"},
-      # Used for mocking websocket servers
-      {:plug_cowboy, "~> 2.0", only: :test}
+      {:plug_cowboy, "~> 2.0"},
+      {:potterhat_node, in_umbrella: true}
     ]
   end
 end

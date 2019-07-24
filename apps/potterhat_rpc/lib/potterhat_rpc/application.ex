@@ -12,27 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-defmodule PotterhatNode.Application do
+defmodule PotterhatRPC.Application do
   @moduledoc false
   use Application
+  require Logger
 
   def start(_type, _args) do
-    _ = DeferredConfig.populate(:potterhat_node)
+    _ = DeferredConfig.populate(:potterhat_rpc)
 
-    children = [PotterhatNode.ActiveNodes | nodes()]
+    port = Application.get_env(:potterhat_rpc, :rpc_port)
+    _ = Logger.info("Starting RPC server on port #{port}")
 
-    opts = [strategy: :one_for_one, name: PotterhatNode.Supervisor]
+    children = [
+      {Plug.Cowboy, scheme: :http, plug: PotterhatRPC.Router, options: [port: port]}
+    ]
+
+    opts = [strategy: :one_for_one, name: PotterhatRPC.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  defp nodes do
-    node_configs = PotterhatNode.get_node_configs()
-
-    Enum.map(node_configs, fn config ->
-      config = Map.put(config, :node_registry, PotterhatNode.ActiveNodes)
-      id = Map.fetch!(config, :id)
-
-      Supervisor.child_spec({PotterhatNode.Node, config}, id: id)
-    end)
   end
 end

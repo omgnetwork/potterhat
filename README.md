@@ -40,19 +40,6 @@ In other words, see https://github.com/omisego/OIP/issues/15.
   - eth_accounts
   - eth_blockNumber
 
-## Umbrella architecture
-
-### Active
-- `node`: Maintains a connection to an Ethereum node
-- `orchestrator`: Manages the active nodes and orchestrates all components into a Potterhat service
-- `pub_sub`: Emits Ethereum Pub/Sub events under a disguise as a single Ethereum client
-- `rpc`: Handles external requests and responses under a disguise as an Ethereum client
-
-### Coming soon
-- `metrics`: Collects & computes metrics from each `node`. Emits alerts on threshold crossing
-- `cache`: Stores the Ethereum data received by `node` for later use
-- `ethereum`: Exposes a friendly Elixir API for interacting with the Ethereum network
-
 ## Prerequisites
 
 - A running Ethereum node. A light node is acceptable.
@@ -94,3 +81,25 @@ docker run -it \
       "id":1
     }' -s | jq
   ```
+
+## Usage remarks
+
+Currently Potterhat behaves as a dumb relay to Ethereum nodes, meaning that discrepancies
+between implementations like Geth v.s. Parity are not handled. It is up to the user to make sure
+that either:
+
+1. Potterhat's consumers do not rely on any client-type specific features, or
+2. Use the same client type for all Potterhat backend nodes
+
+Cross-client support maybe considered for Potterhat in the future but it will take some time.
+
+## Umbrella architecture
+
+### Active
+- `potterhat_node`: Maintains a connection to an Ethereum node
+- `potterhat_rpc`: Handles external requests and responses under a disguise as an Ethereum client
+
+### Coming soon
+- `potterhat_pub_sub`: Emits Ethereum Pub/Sub events under a disguise as a single Ethereum client
+- `potterhat_metrics`: Collects & computes metrics from each `node`. Emits alerts on threshold crossing
+- `potterhat_cache`: Stores the Ethereum data received by `node` for later use
