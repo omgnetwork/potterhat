@@ -39,12 +39,6 @@ defmodule Potterhat.MixProject do
   defp elixirc_paths(_),     do: ["lib"]
 
   defp deps do
-    [
-      {:potterhat_elixir, in_umbrella: true}
-      {:potterhat_metrics, in_umbrella: true}
-      {:potterhat_node, in_umbrella: true}
-      {:potterhat_rpc, in_umbrella: true}
-      {:potterhat_utils, in_umbrella: true}
-    ]
+    []
   end
 end
