@@ -22,7 +22,7 @@ defmodule PotterhatElixir.PotterhatClient do
       {:ok, %{"error" => error}} -> {:error, error}
       {:ok, [%{} | _] = result} -> {:ok, format_batch(result)}
       {:ok, %{"result" => result}} -> {:ok, result}
-      {:ok, _} -> {:error, decoded_body}
+      {:ok, decoded_body} -> {:error, decoded_body}
       {:error, %DecodeError{data: ""}} -> {:error, :empty_response}
       {:error, error} -> {:error, {:invalid_json, error}}
     end
