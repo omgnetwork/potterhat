@@ -44,7 +44,7 @@ defmodule PotterhatNode.MixProject do
   defp deps do
     [
       {:deferred_config, "~> 0.1.0"},
-      {:ethereumex, "~> 0.5.3"},
+      {:ethereumex, "~> 0.5.4"},
       {:httpoison, "~> 1.4"},
       {:jason, "~> 1.1"},
       {:potterhat_utils, in_umbrella: true},
