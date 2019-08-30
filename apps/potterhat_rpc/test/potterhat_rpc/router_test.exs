@@ -77,8 +77,8 @@ defmodule PotterhatRPC.RouterTest do
     end
 
     test "parses Phoenix-added '_json' key properly" do
-      body_params =
-        %{"_json" => [
+      body_params = %{
+        "_json" => [
           %{
             "jsonrpc" => "2.0",
             "method" => "web3_clientVersion",
@@ -91,7 +91,8 @@ defmodule PotterhatRPC.RouterTest do
             "params" => [],
             "id" => :rand.uniform(999)
           }
-        ]}
+        ]
+      }
 
       response =
         Router
