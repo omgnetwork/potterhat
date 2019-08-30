@@ -76,6 +76,26 @@ defmodule PotterhatRPC.RouterTest do
       assert response["result"] == "PotterhatMockEthereumNode"
     end
 
+    test "parses Phoenix-added '_json' key properly" do
+      body_params =
+        %{"_json" => [
+          %{
+            "jsonrpc" => "2.0",
+            "method" => "web3_clientVersion",
+            "params" => [],
+            "id" => :rand.uniform(999)
+          }
+        ]}
+
+      response =
+        Router
+        |> call(:post, "/", body_params)
+        |> json_response()
+
+      # The response should be from PotterhatNode.MockEthereumNode.RPC
+      assert response["result"] == "PotterhatMockEthereumNode"
+    end
+
     test "returns an error response when received an error from forwarding" do
       body_params = %{
         "jsonrpc" => "2.0",

@@ -46,7 +46,10 @@ defmodule PotterhatRPC.Router do
 
   # Forward all POST requests to the node and relay the response back to the requester.
   post "/" do
-    case EthForwarder.forward(conn.body_params, conn.req_headers) do
+    conn
+    |> get_body_params()
+    |> EthForwarder.forward(conn.req_headers)
+    |> case do
       {:ok, response} ->
         _ = :telemetry.execute([:rpc, :request, :success], %{}, %{conn: conn})
 
@@ -61,6 +64,11 @@ defmodule PotterhatRPC.Router do
         ErrorHandler.send_resp(conn, code)
     end
   end
+
+  # Phoenix will wrap its received params with "_json" key if they are a JSON array.
+  # We'll need to access the "_json" key to retrieve the original params.
+  defp get_body_params(%{body_params: %{"_json" => params}}), do: params
+  defp get_body_params(%{body_params: params}), do: params
 
   defp store_eth_method(conn, _opts) do
     Conn.assign(conn, :eth_method, conn.body_params["method"])
