@@ -36,8 +36,16 @@ defmodule PotterhatNode.MockEthereumNode.RPC do
     send_resp(conn, 200, "Invalid request")
   end
 
-  def generate_response(conn) do
-    conn.body_params
+  def generate_response(%{body_params: batch_params} = conn) when is_list(batch_params) do
+    Enum.map(batch_params, fn body_params -> generate_response(body_params, conn) end)
+  end
+
+  def generate_response(%{body_params: body_params} = conn) do
+    generate_response(body_params, conn)
+  end
+
+  def generate_response(body_params, conn) do
+    body_params
     |> Map.fetch!("method")
     |> do_generate_response(conn)
   end
