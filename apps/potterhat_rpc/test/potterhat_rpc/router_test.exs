@@ -84,6 +84,12 @@ defmodule PotterhatRPC.RouterTest do
             "method" => "web3_clientVersion",
             "params" => [],
             "id" => :rand.uniform(999)
+          },
+          %{
+            "jsonrpc" => "2.0",
+            "method" => "web3_clientVersion",
+            "params" => [],
+            "id" => :rand.uniform(999)
           }
         ]}
 
@@ -93,7 +99,7 @@ defmodule PotterhatRPC.RouterTest do
         |> json_response()
 
       # The response should be from PotterhatNode.MockEthereumNode.RPC
-      assert response["result"] == "PotterhatMockEthereumNode"
+      assert Enum.all?(response, fn resp -> resp["result"] == "PotterhatMockEthereumNode" end)
     end
 
     test "returns an error response when received an error from forwarding" do
