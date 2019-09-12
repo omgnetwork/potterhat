@@ -17,7 +17,7 @@ defmodule PotterhatNode.EnvConfigProvider do
   A Mix.Releases-compatible config provider that converts
   Potterhat-related environment variables into application configs.
   """
-  use Mix.Releases.Config.Provider
+  use Distillery.Releases.Config.Provider
   alias PotterhatNode.NodeConfig
   require Logger
 

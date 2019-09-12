@@ -14,6 +14,96 @@
 
 In other words, see https://github.com/omisego/OIP/issues/15.
 
+## Installation
+
+### Prerequisites
+
+- A running Ethereum node. A light node is acceptable. Start one via Docker with:
+
+  ```shell
+  docker run -it \
+    -v ~/docker-ethereum:/root \
+    -p 8545:8545 \
+    -p 8546:8546 \
+    -p 30303:30303 \
+    ethereum/client-go --syncmode "light" \
+    --rpc --rpcaddr "0.0.0.0" \
+    --ws --wsaddr "0.0.0.0"
+  ```
+
+### Configuration
+
+Configure an arbitary number of nodes via environment variables:
+
+```shell
+export POTTERHAT_NODE_0_ID="cluster_geth"
+export POTTERHAT_NODE_0_LABEL="Cluster Geth"
+export POTTERHAT_NODE_0_CLIENT_TYPE="geth"
+export POTTERHAT_NODE_0_RPC="http://cluster_geth:8545"
+export POTTERHAT_NODE_0_WS="ws://cluster_geth:8545"
+export POTTERHAT_NODE_0_PRIORITY="10"
+
+export POTTERHAT_NODE_1_ID="cluster_parity"
+# ...
+```
+
+## Usage
+
+### Potterhat as a standalone service
+
+1. Start Potterhat
+
+    ```shell
+    RPC_PORT=8545 mix run --no-halt
+    ```
+
+2. Health check
+
+    ```shell
+    curl http://localhost:8545
+    ```
+
+3. Do an RPC call
+
+    ```shell
+    curl -X POST http://localhost:8545 \
+      -H "Content-Type: application/json" \
+      --data '{
+        "jsonrpc":"2.0",
+        "method":"eth_blockNumber",
+        "params":[],
+        "id":1
+      }' -s | jq
+    ```
+
+### Potterhat as an Elixir library
+
+1. Add Ethereumex to your mix.exs dependencies:
+
+    ```elixir
+    def deps do
+      [{:potterhat, github: "omisego/potterhat"}]
+    end
+    ```
+
+2. Implement Potterhat into your Elixir application the same way you would do for [Ethereumex](https://github.com/mana-ethereum/ethereumex):
+
+    ```elixir
+    iex> PotterhatElixir.PotterhatClient.web3_client_version()
+    {:ok, "Parity//v1.7.2-beta-9f47909-20170918/x86_64-macos/rustc1.19.0"}
+    ```
+
+### Usage remarks
+
+Currently Potterhat behaves as a dumb relay to Ethereum nodes, meaning that discrepancies
+between implementations like Geth v.s. Parity are not handled. It is up to the user to make sure
+that either:
+
+1. Potterhat's consumers do not rely on any client-type specific features, or
+2. Use the same client type for all Potterhat backend nodes
+
+Cross-client support may be considered for Potterhat in the future but it will take some time.
+
 ## Potential metrics
 
 - A node falling behind in block heights
@@ -39,67 +129,3 @@ In other words, see https://github.com/omisego/OIP/issues/15.
   - eth_gasPrice
   - eth_accounts
   - eth_blockNumber
-
-## Prerequisites
-
-- A running Ethereum node. A light node is acceptable.
-
-```
-docker run -it \
-  -v ~/docker-ethereum:/root \
-  -p 8545:8545 \
-  -p 8546:8546 \
-  -p 30303:30303 \
-  ethereum/client-go --syncmode "light" \
-  --rpc --rpcaddr "0.0.0.0" \
-  --ws --wsaddr "0.0.0.0"
-```
-
-## Usage
-
-1. Start Potterhat
-
-  ```
-  RPC_PORT=8545 mix run --no-halt
-  ```
-
-2. Health check
-
-  ```
-  curl http://localhost:8545
-  ```
-
-3. Do an RPC call
-
-  ```
-  curl -X POST http://localhost:8545 \
-    -H "Content-Type: application/json" \
-    --data '{
-      "jsonrpc":"2.0",
-      "method":"eth_blockNumber",
-      "params":[],
-      "id":1
-    }' -s | jq
-  ```
-
-## Usage remarks
-
-Currently Potterhat behaves as a dumb relay to Ethereum nodes, meaning that discrepancies
-between implementations like Geth v.s. Parity are not handled. It is up to the user to make sure
-that either:
-
-1. Potterhat's consumers do not rely on any client-type specific features, or
-2. Use the same client type for all Potterhat backend nodes
-
-Cross-client support maybe considered for Potterhat in the future but it will take some time.
-
-## Umbrella architecture
-
-### Active
-- `potterhat_node`: Maintains a connection to an Ethereum node
-- `potterhat_rpc`: Handles external requests and responses under a disguise as an Ethereum client
-
-### Coming soon
-- `potterhat_pub_sub`: Emits Ethereum Pub/Sub events under a disguise as a single Ethereum client
-- `potterhat_metrics`: Collects & computes metrics from each `node`. Emits alerts on threshold crossing
-- `potterhat_cache`: Stores the Ethereum data received by `node` for later use
